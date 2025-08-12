@@ -238,9 +238,10 @@ namespace GRA.Controllers.Base
         /// <returns>A tuple, the bool is true if the setting is present and a number with the
         /// value being the number. The bool is false if the setting is not set or is not a
         /// parsable integer.</returns>
-        protected async Task<(bool, int)> GetSiteSettingIntAsync(string key)
+        protected async Task<Tuple<bool, int>> GetSiteSettingIntAsync(string key)
         {
-            return await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(), key);
+            var result = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(), key);
+            return Tuple.Create(result.Item1, result.Item2);
         }
 
         /// <summary>
@@ -250,9 +251,10 @@ namespace GRA.Controllers.Base
         /// <returns>A tuple, the bool is true if the setting is present and a string with the
         /// value . The bool is false if the setting is not set.</returns>
         /// integer.</returns>
-        protected async Task<(bool, string)> GetSiteSettingStringAsync(string key)
+        protected async Task<Tuple<bool, string>> GetSiteSettingStringAsync(string key)
         {
-            return await _siteLookupService.GetSiteSettingStringAsync(GetCurrentSiteId(), key);
+            var result = await _siteLookupService.GetSiteSettingStringAsync(GetCurrentSiteId(), key);
+            return Tuple.Create(result.Item1, result.Item2);
         }
 
         protected SiteStage GetSiteStage()

@@ -245,10 +245,11 @@ namespace GRA.Controllers
                 viewModel.AskFirstTime = EmptyNoYes();
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText)
-                = TempData.ContainsKey(SinglePageSignUp)
-                    ? (false, "")
-                    : await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var tupleEmail = TempData.ContainsKey(SinglePageSignUp)
+                ? Tuple.Create(false, "")
+                : await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            bool askEmailSubscription = tupleEmail.Item1;
+            string askEmailSubscriptionText = tupleEmail.Item2;
 
             if (askEmailSubscription)
             {
