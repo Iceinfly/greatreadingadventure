@@ -245,11 +245,19 @@ namespace GRA.Controllers
                 viewModel.AskFirstTime = EmptyNoYes();
             }
 
-            var tupleEmail = TempData.ContainsKey(SinglePageSignUp)
-                ? Tuple.Create(false, "")
-                : await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
-            bool askEmailSubscription = tupleEmail.Item1;
-            string askEmailSubscriptionText = tupleEmail.Item2;
+            bool askEmailSubscription;
+            string askEmailSubscriptionText;
+            if (TempData.ContainsKey(SinglePageSignUp))
+            {
+                askEmailSubscription = false;
+                askEmailSubscriptionText = "";
+            }
+            else
+            {
+                var tupleEmail = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+                askEmailSubscription = tupleEmail.Item1;
+                askEmailSubscriptionText = tupleEmail.Item2;
+            }
 
             if (askEmailSubscription)
             {
@@ -257,8 +265,10 @@ namespace GRA.Controllers
                 viewModel.AskEmailSubscriptionText = askEmailSubscriptionText;
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var tupleGoal = await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            bool askActivityGoal = tupleGoal.Item1;
+            int defaultDailyGoal = tupleGoal.Item2;
+
             if (askActivityGoal)
             {
                 viewModel.DailyPersonalGoal = defaultDailyGoal;
@@ -356,10 +366,18 @@ namespace GRA.Controllers
                 ModelState.Remove(nameof(model.IsFirstTime));
             }
 
-            (askEmailSubscription, askEmailSubscriptionText)
-                = TempData.ContainsKey(SinglePageSignUp)
-                    ? (false, "")
-                    : await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+
+            if (TempData.ContainsKey(SinglePageSignUp))
+            {
+                askEmailSubscription = false;
+                askEmailSubscriptionText = "";
+            }
+            else
+            {
+                var tupleEmail = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+                askEmailSubscription = tupleEmail.Item1;
+                askEmailSubscriptionText = tupleEmail.Item2;
+            }
 
             TempData.Keep(SinglePageSignUp);
 
@@ -379,8 +397,9 @@ namespace GRA.Controllers
                 }
             }
 
-            (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var tupleGoal = await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            askActivityGoal = tupleGoal.Item1;
+            defaultDailyGoal = tupleGoal.Item2;
 
             if (model.ProgramId.HasValue)
             {
@@ -908,16 +927,20 @@ namespace GRA.Controllers
                 viewModel.AskFirstTime = EmptyNoYes();
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText) = await GetSiteSettingStringAsync(
-                SiteSettingKey.Users.AskEmailSubPermission);
+            var tupleEmail = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            bool askEmailSubscription = tupleEmail.Item1;
+            string askEmailSubscriptionText = tupleEmail.Item2;
+
             if (askEmailSubscription)
             {
                 viewModel.AskEmailSubscription = EmptyNoYes();
                 viewModel.AskEmailSubscriptionText = askEmailSubscriptionText;
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var tupleGoal = await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            bool askActivityGoal = tupleGoal.Item1;
+            int defaultDailyGoal = tupleGoal.Item2;
+
             if (askActivityGoal)
             {
                 viewModel.DailyPersonalGoal = defaultDailyGoal;
@@ -949,8 +972,10 @@ namespace GRA.Controllers
                 ModelState.Remove(nameof(model.IsFirstTime));
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText) = await GetSiteSettingStringAsync(
-                SiteSettingKey.Users.AskEmailSubPermission);
+            var tupleEmail = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            bool askEmailSubscription = tupleEmail.Item1;
+            string askEmailSubscriptionText = tupleEmail.Item2;
+
             if (!askEmailSubscription)
             {
                 ModelState.Remove(nameof(model.EmailSubscriptionRequested));
@@ -967,8 +992,9 @@ namespace GRA.Controllers
                 }
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var tupleGoal = await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            bool askActivityGoal = tupleGoal.Item1;
+            int defaultDailyGoal = tupleGoal.Item2;
 
             if (site.SinglePageSignUp)
             {
@@ -1121,8 +1147,10 @@ namespace GRA.Controllers
 
         private async Task<string> GetWelcomeMessageAsync()
         {
-            var (welcomeSet, welcomeSegmentId) = await _siteLookupService
+            var tupleWelcome = await _siteLookupService
                 .GetSiteSettingIntAsync(GetCurrentSiteId(), SiteSettingKey.Site.WelcomeMessage);
+            bool welcomeSet = tupleWelcome.Item1;
+            int welcomeSegmentId = tupleWelcome.Item2;
 
             if (welcomeSet)
             {
