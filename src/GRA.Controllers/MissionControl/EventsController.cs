@@ -218,10 +218,10 @@ namespace GRA.Controllers.MissionControl
             model.ProgramList = new SelectList(programList, "Id", "Name");
             model.RequireSecretCode = requireSecretCode;
 
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
+            var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
                 GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-            model.ShowGeolocation = IsSet;
-            model.GoogleMapsAPIKey = SetValue;
+            model.ShowGeolocation = mapsKey.Item1;
+            model.GoogleMapsAPIKey = mapsKey.Item2;
 
             if (model.Editing)
             {
@@ -397,9 +397,8 @@ namespace GRA.Controllers.MissionControl
                     SiteSettingKey.Events.RequireBadge);
             var programList = await _siteService.GetProgramList();
 
-            var (maxPointLimitSet, maxPointLimit)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.MaxPointsPerTrigger);
+            var maxPoints = await _siteLookupService.GetSiteSettingIntAsync(
+                GetCurrentSiteId(), SiteSettingKey.Triggers.MaxPointsPerTrigger);
 
             var viewModel = new EventsDetailViewModel
             {
@@ -409,7 +408,7 @@ namespace GRA.Controllers.MissionControl
                 CanRelateChallenge = UserHasPermission(Permission.ViewAllChallenges),
                 IgnorePointLimits = UserHasPermission(Permission.IgnorePointLimits),
                 IncludeSecretCode = requireSecretCode,
-                MaxPointLimit = maxPointLimitSet ? maxPointLimit : null,
+                MaxPointLimit = maxPoints.Item1 ? maxPoints.Item2 : (int?)null,
                 ProgramList = new SelectList(programList, "Id", "Name"),
                 RequireSecretCode = requireSecretCode
             };
@@ -481,10 +480,10 @@ namespace GRA.Controllers.MissionControl
                 PageTitle = "Create Event";
             }
 
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
-                    GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-            viewModel.ShowGeolocation = IsSet;
-            viewModel.GoogleMapsAPIKey = SetValue;
+            var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
+                GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
+            viewModel.ShowGeolocation = mapsKey.Item1;
+            viewModel.GoogleMapsAPIKey = mapsKey.Item2;
 
             return streamingEvent
                 ? View("AddEditStreaming", viewModel)
@@ -503,11 +502,9 @@ namespace GRA.Controllers.MissionControl
 
             var requireSecretCode
                 = await GetSiteSettingBoolAsync(SiteSettingKey.Events.RequireBadge);
-            var (maxPointLimitSet, maxPointLimit)
-                = await GetSiteSettingIntAsync(SiteSettingKey.Triggers.MaxPointsPerTrigger);
-
+            var maxPoints = await GetSiteSettingIntAsync(SiteSettingKey.Triggers.MaxPointsPerTrigger);
             model.IgnorePointLimits = UserHasPermission(Permission.IgnorePointLimits);
-            model.MaxPointLimit = maxPointLimitSet ? maxPointLimit : null;
+            model.MaxPointLimit = maxPoints.Item1 ? maxPoints.Item2 : (int?)null;
 
             if (model.Event.AllDay)
             {
@@ -728,10 +725,10 @@ namespace GRA.Controllers.MissionControl
                 PageTitle = "Create Event";
             }
 
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
-                    GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-            model.ShowGeolocation = IsSet;
-            model.GoogleMapsAPIKey = SetValue;
+            var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
+                GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
+            model.ShowGeolocation = mapsKey.Item1;
+            model.GoogleMapsAPIKey = mapsKey.Item2;
 
             return View(model);
         }
@@ -869,10 +866,10 @@ namespace GRA.Controllers.MissionControl
                         .ResolveContentPath(badge.Filename);
                 }
 
-                var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
+                var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
                     GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-                viewModel.ShowGeolocation = IsSet;
-                viewModel.GoogleMapsAPIKey = SetValue;
+                viewModel.ShowGeolocation = mapsKey.Item1;
+                viewModel.GoogleMapsAPIKey = mapsKey.Item2;
 
                 return View(viewModel);
             }
@@ -1007,10 +1004,10 @@ namespace GRA.Controllers.MissionControl
             model.LocationList = new SelectList(locationList, "Id", "Name");
             model.ProgramList = new SelectList(programList, "Id", "Name");
 
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
+            var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
                 GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-            model.ShowGeolocation = IsSet;
-            model.GoogleMapsAPIKey = SetValue;
+            model.ShowGeolocation = mapsKey.Item1;
+            model.GoogleMapsAPIKey = mapsKey.Item2;
 
             return View(model);
         }
@@ -1092,7 +1089,7 @@ namespace GRA.Controllers.MissionControl
                 PageTitle = "Edit Streaming Event";
 
                 var programList = await _siteService.GetProgramList();
-                var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
+                var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
                     GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
 
                 var model = new EventsDetailViewModel
@@ -1109,8 +1106,8 @@ namespace GRA.Controllers.MissionControl
                     RequireSecretCode = await GetSiteSettingBoolAsync(
                         SiteSettingKey.Events.RequireBadge),
 
-                    ShowGeolocation = IsSet,
-                    GoogleMapsAPIKey = SetValue,
+                    ShowGeolocation = mapsKey.Item1,
+                    GoogleMapsAPIKey = mapsKey.Item2
                 };
 
                 model.Event = await _eventService.GetRelatedChallengeDetails(model.Event, true);
@@ -1153,8 +1150,9 @@ namespace GRA.Controllers.MissionControl
             if (eventFileCsv != null && ModelState.ErrorCount == 0)
             {
                 using var streamReader = new StreamReader(eventFileCsv.OpenReadStream());
-                (ImportStatus status, string message)
-                    = await _eventImportService.FromCsvAsync(streamReader);
+                var importResult = await _eventImportService.FromCsvAsync(streamReader);
+                var status = importResult.Item1;
+                var message = importResult.Item2;
 
                 switch (status)
                 {
@@ -1247,10 +1245,10 @@ namespace GRA.Controllers.MissionControl
                 PaginateModel = paginateModel,
             };
 
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
+            var mapsKey = await _siteLookupService.GetSiteSettingStringAsync(
                 GetCurrentSiteId(), SiteSettingKey.Events.GoogleMapsAPIKey);
-            viewModel.ShowGeolocation = IsSet;
-            viewModel.GoogleMapsAPIKey = SetValue;
+            viewModel.ShowGeolocation = mapsKey.Item1;
+            viewModel.GoogleMapsAPIKey = mapsKey.Item2;
 
             return View(viewModel);
         }
