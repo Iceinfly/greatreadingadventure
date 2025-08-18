@@ -318,9 +318,9 @@ namespace GRA.Domain.Service
                 if (memberToAdd.IsEmailSubscribed)
                 {
                     memberToAdd.IsEmailSubscribed = false;
-                    var (askEmailSubscription, _) = await _siteLookupService
-                        .GetSiteSettingStringAsync(siteId,
-                            SiteSettingKey.Users.AskEmailSubPermission);
+                    var askEmailSetting = await _siteLookupService
+                        .GetSiteSettingStringAsync(siteId, SiteSettingKey.Users.AskEmailSubPermission);
+                    var askEmailSubscription = askEmailSetting.Item1;
                     if (askEmailSubscription)
                     {
                         emailSubscribe = true;
@@ -1077,8 +1077,9 @@ namespace GRA.Domain.Service
             int skip,
             int take)
         {
-            var (_, memberLongerThanHours) = await _siteLookupService
+            var welcomeDelay = await _siteLookupService
                 .GetSiteSettingIntAsync(siteId, SiteSettingKey.Email.WelcomeDelayHours);
+            var memberLongerThanHours = welcomeDelay.Item2;
 
             return await _userRepository
                 .GetWelcomeRecipientsAsync(skip, take, memberLongerThanHours);
@@ -1088,20 +1089,22 @@ namespace GRA.Domain.Service
         {
             var siteId = GetCurrentSiteId();
 
-            var (emailIdSet, welcomeEmailId) = await _siteLookupService
-                        .GetSiteSettingIntAsync(siteId, SiteSettingKey.Email.WelcomeTemplateId);
+            var welcomeTemplateSetting = await _siteLookupService
+                .GetSiteSettingIntAsync(siteId, SiteSettingKey.Email.WelcomeTemplateId);
+            var emailIdSet = welcomeTemplateSetting.Item1;
+            var welcomeEmailId = welcomeTemplateSetting.Item2;
 
             if (!emailIdSet || welcomeEmailId == 0)
             {
-                // abort if no welcome email is set
                 return 0;
             }
 
-            var (_, memberLongerThanHours) = await _siteLookupService
+            var welcomeDelay = await _siteLookupService
                 .GetSiteSettingIntAsync(siteId, SiteSettingKey.Email.WelcomeDelayHours);
+            var memberLongerThanHours = welcomeDelay.Item2;
 
-            return await _userRepository.GetWelcomePendingCountAsync(welcomeEmailId,
-                memberLongerThanHours);
+            return await _userRepository
+                .GetWelcomePendingCountAsync(welcomeEmailId, memberLongerThanHours);
         }
 
         public async Task<JobStatus> ImportHouseholdMembersAsync(int jobId,
@@ -1414,14 +1417,14 @@ namespace GRA.Domain.Service
 
                 if (userToUpdate.IsEmailSubscribed != currentEntity.IsEmailSubscribed)
                 {
-                    var (askEmailSubscription, _) = await _siteLookupService
+                    var askEmailSetting = await _siteLookupService
                         .GetSiteSettingStringAsync(GetCurrentSiteId(),
-                            SiteSettingKey.Users.AskEmailSubPermission);
+                        SiteSettingKey.Users.AskEmailSubPermission);
+                    var askEmailSubscription = askEmailSetting.Item1;
                     if (askEmailSubscription)
                     {
                         updatedUser.IsEmailSubscribed = await _emailManagementService
-                            .SetUserEmailSubscriptionStatusAsync(updatedUser.Id,
-                                userToUpdate.IsEmailSubscribed);
+                            .SetUserEmailSubscriptionStatusAsync(updatedUser.Id, userToUpdate.IsEmailSubscribed);
                     }
                     else if (userToUpdate.IsEmailSubscribed)
                     {
@@ -1599,8 +1602,9 @@ namespace GRA.Domain.Service
             if (user.IsEmailSubscribed)
             {
                 user.IsEmailSubscribed = false;
-                var (askEmailSubscription, _) = await _siteLookupService
+                var askEmailSetting = await _siteLookupService
                     .GetSiteSettingStringAsync(siteId, SiteSettingKey.Users.AskEmailSubPermission);
+                var askEmailSubscription = askEmailSetting.Item1;
                 if (askEmailSubscription)
                 {
                     emailSubscribe = true;
@@ -1773,14 +1777,14 @@ namespace GRA.Domain.Service
 
                 if (userToUpdate.IsEmailSubscribed != currentEntity.IsEmailSubscribed)
                 {
-                    var (askEmailSubscription, _) = await _siteLookupService
+                    var askEmailSetting = await _siteLookupService
                         .GetSiteSettingStringAsync(GetCurrentSiteId(),
-                            SiteSettingKey.Users.AskEmailSubPermission);
+                        SiteSettingKey.Users.AskEmailSubPermission);
+                    var askEmailSubscription = askEmailSetting.Item1;
                     if (askEmailSubscription)
                     {
                         updatedUser.IsEmailSubscribed = await _emailManagementService
-                            .SetUserEmailSubscriptionStatusAsync(updatedUser.Id,
-                                userToUpdate.IsEmailSubscribed);
+                            .SetUserEmailSubscriptionStatusAsync(updatedUser.Id, userToUpdate.IsEmailSubscribed);
                     }
                     else if (userToUpdate.IsEmailSubscribed)
                     {
@@ -1919,9 +1923,11 @@ namespace GRA.Domain.Service
         public async Task<bool> UsersToAddExceedsHouseholdLimitAsync(int householdHeadId,
             int usersToAdd)
         {
-            (bool IsSet, int maximumHouseholdSize) = await _siteLookupService
+            var maxHouseholdSetting = await _siteLookupService
                 .GetSiteSettingIntAsync(GetCurrentSiteId(),
                     SiteSettingKey.Users.MaximumHouseholdSizeBeforeGroup);
+            bool IsSet = maxHouseholdSetting.Item1;
+            int maximumHouseholdSize = maxHouseholdSetting.Item2;
 
             if (IsSet)
             {
@@ -1933,7 +1939,6 @@ namespace GRA.Domain.Service
                     return true;
                 }
             }
-
             return false;
         }
 
