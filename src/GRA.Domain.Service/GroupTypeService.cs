@@ -33,7 +33,9 @@ namespace GRA.Domain.Service
         {
             VerifyManagementPermission();
             int siteId = GetCurrentSiteId();
-            var (list, count) = await _groupTypeRepository.GetAllPagedAsync(siteId, skip, take);
+            var paged = await _groupTypeRepository.GetAllPagedAsync(siteId, skip, take);
+            var list = paged.Item1;
+            var count = paged.Item2;
             return new DataWithCount<IEnumerable<GroupType>>
             {
                 Count = count,
@@ -41,7 +43,7 @@ namespace GRA.Domain.Service
             };
         }
 
-        public async Task<(bool, string)> Add(int currentUserId, string groupTypeName)
+        public async Task<Tuple<bool, string>> Add(int currentUserId, string groupTypeName)
         {
             VerifyManagementPermission();
             if (string.IsNullOrEmpty(groupTypeName)
@@ -56,11 +58,11 @@ namespace GRA.Domain.Service
                     SiteId = GetCurrentSiteId(),
                     Name = groupTypeName.Trim()
                 });
-                return (true, groupTypeName.Trim());
+                return Tuple.Create(true, groupTypeName.Trim());
             }
             catch (Exception ex)
             {
-                return (false, $"Unable to add group type: {ex.Message}");
+                return Tuple.Create(false, $"Unable to add group type: {ex.Message}");
             }
         }
 
@@ -94,7 +96,7 @@ namespace GRA.Domain.Service
             }
         }
 
-        public async Task<(bool, string)> Edit(int currentUserId, int groupTypeId, string groupTypeName)
+        public async Task<Tuple<bool, string>> Edit(int currentUserId, int groupTypeId, string groupTypeName)
         {
             VerifyManagementPermission();
             if (string.IsNullOrEmpty(groupTypeName)
@@ -107,11 +109,11 @@ namespace GRA.Domain.Service
                 var groupType = await _groupTypeRepository.GetByIdAsync(groupTypeId);
                 groupType.Name = groupTypeName.Trim();
                 await _groupTypeRepository.UpdateSaveAsync(currentUserId, groupType);
-                return (true, groupTypeName.Trim());
+                return Tuple.Create(true, groupTypeName.Trim());
             }
             catch (Exception ex)
             {
-                return (false, $"Unable to edit group type: {ex.Message}");
+                return Tuple.Create(false, $"Unable to edit group type: {ex.Message}");
             }
         }
     }

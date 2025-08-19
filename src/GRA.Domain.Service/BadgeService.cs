@@ -119,11 +119,11 @@ namespace GRA.Domain.Service
 
         public async Task ValidateBadgeImageAsync(byte[] badgeImage)
         {
-            var (IsSet, SetValue) = await _siteLookupService
-                    .GetSiteSettingIntAsync(GetCurrentSiteId(), SiteSettingKey.Badges.MaxFileSize);
-            if (IsSet && badgeImage != null && badgeImage.Length > SetValue * KBSize)
+            var setting = await _siteLookupService
+                .GetSiteSettingIntAsync(GetCurrentSiteId(), SiteSettingKey.Badges.MaxFileSize);
+            if (setting.Item1 && badgeImage != null && badgeImage.Length > setting.Item2 * KBSize)
             {
-                throw new GraException($"File size exceeds the maximum of {SetValue}KB");
+                throw new GraException($"File size exceeds the maximum of {setting.Item2}KB");
             }
 
             try
@@ -175,13 +175,11 @@ namespace GRA.Domain.Service
             try
             {
                 using var image = Image.Load(imageFile);
-                var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(
-                    GetCurrentSiteId(),
-                    SiteSettingKey.Badges.MaxDimension);
 
-                int maxDimension = IsSet
-                    ? SetValue
-                    : DefaultMaxDimension;
+                var setting = await _siteLookupService.GetSiteSettingIntAsync(
+                    GetCurrentSiteId(), SiteSettingKey.Badges.MaxDimension);
+
+                int maxDimension = setting.Item1 ? setting.Item2 : DefaultMaxDimension;
 
                 if (image.Width > maxDimension || image.Height > maxDimension)
                 {

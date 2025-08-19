@@ -487,9 +487,10 @@ namespace GRA.Domain.Service
 
         public async Task<int?> GetMaximumAllowedPointsAsync(int siteId)
         {
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(siteId,
-                SiteSettingKey.Challenges.MaxPointsPerChallengeTask);
-            return IsSet ? SetValue : null;
+            var setting = await _siteLookupService.GetSiteSettingIntAsync(
+                siteId, SiteSettingKey.Challenges.MaxPointsPerChallengeTask);
+
+            return setting.Item1 ? (int?)setting.Item2 : null;
         }
 
         public async Task<DataWithCount<IEnumerable<Challenge>>>

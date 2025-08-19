@@ -48,9 +48,11 @@ namespace GRA.Domain.Service
         {
             var serviceResult = new ServiceResult<string>();
 
-            var (geocodingEnabled, APIKey) = await _siteLookupService.GetSiteSettingStringAsync(
+            var setting = await _siteLookupService.GetSiteSettingStringAsync(
                 GetCurrentSiteId(),
                 SiteSettingKey.Events.GoogleMapsAPIKey);
+            var geocodingEnabled = setting.Item1;
+            var APIKey = setting.Item2;
 
             if (!geocodingEnabled)
             {

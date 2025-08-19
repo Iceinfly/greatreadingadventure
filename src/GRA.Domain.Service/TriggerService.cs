@@ -294,9 +294,10 @@ namespace GRA.Domain.Service
                     throw new GraException("Invalid Avatar Bundle selection.");
                 }
             }
-            var (maxPointLimitSet, maxPointLimit)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    Triggers.MaxPointsPerTrigger);
+            var maxPointsSetting = await _siteLookupService.GetSiteSettingIntAsync(
+                GetCurrentSiteId(), Triggers.MaxPointsPerTrigger);
+            var maxPointLimitSet = maxPointsSetting.Item1;
+            var maxPointLimit = maxPointsSetting.Item2;
 
             if (maxPointLimitSet && !HasPermission(Permission.IgnorePointLimits))
             {

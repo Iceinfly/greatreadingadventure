@@ -1698,18 +1698,18 @@ namespace GRA.Domain.Service
 
         private async Task<int> GetMaximumAllowedActivityAsync(int siteId)
         {
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(siteId,
-                SiteSettingKey.Users.MaximumActivityPermitted);
+            var setting = await _siteLookupService.GetSiteSettingIntAsync(
+                siteId, SiteSettingKey.Users.MaximumActivityPermitted);
 
-            return IsSet ? SetValue : int.MaxValue;
+            return setting.Item1 ? setting.Item2 : int.MaxValue;
         }
 
         private async Task<int> GetMaximumAllowedPointsAsync(int siteId)
         {
-            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(siteId,
-                SiteSettingKey.Points.MaximumPermitted);
+            var setting = await _siteLookupService.GetSiteSettingIntAsync(
+                siteId, SiteSettingKey.Points.MaximumPermitted);
 
-            return IsSet ? SetValue : int.MaxValue;
+            return setting.Item1 ? setting.Item2 : int.MaxValue;
         }
 
         private async Task<User> RemovePointsSaveAsync(int currentUserId,

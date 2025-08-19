@@ -361,8 +361,11 @@ namespace GRA.Domain.Service
                 {
                     try
                     {
-                        var (templateId, definedLanguages) = await _directEmailTemplateRepository
+                        var templateInfo = await _directEmailTemplateRepository
                             .GetIdAndLanguagesBySystemIdAsync(insertText.Data.ImportSystemEmailId);
+
+                        var templateId = templateInfo.Item1;
+                        var definedLanguages = templateInfo.Item2;
 
                         if (!cultureLookup.ContainsKey(insertText.Data.ImportCulture))
                         {

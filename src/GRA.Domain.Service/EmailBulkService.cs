@@ -117,8 +117,10 @@ namespace GRA.Domain.Service
                 var stage = _siteLookupService.GetSiteStage(site);
                 if (stage == SiteStage.ProgramOpen)
                 {
-                    var (emailIdSet, welcomeEmailId) = await _siteLookupService
+                    var welcomeTuple = await _siteLookupService
                         .GetSiteSettingIntAsync(site.Id, SiteSettingKey.Email.WelcomeTemplateId);
+                    var emailIdSet = welcomeTuple.Item1;
+                    var welcomeEmailId = welcomeTuple.Item2;
 
                     if (!emailIdSet || welcomeEmailId == 0)
                     {
@@ -126,8 +128,10 @@ namespace GRA.Domain.Service
                         return false;
                     }
 
-                    var (unsubSet, unsubBase) = await _siteLookupService
-                        .GetSiteSettingStringAsync(site.Id, SiteSettingKey.Email.UnsubscribeBase);
+                    var unsubTuple = await _siteLookupService
+                      .GetSiteSettingStringAsync(site.Id, SiteSettingKey.Email.UnsubscribeBase);
+                    var unsubSet = unsubTuple.Item1;
+                    var unsubBase = unsubTuple.Item2;
 
                     if (!unsubSet || string.IsNullOrEmpty(unsubBase))
                     {
@@ -157,9 +161,11 @@ namespace GRA.Domain.Service
                     var alreadyReceived = await _directEmailHistoryRepository
                         .GetSentEmailByTemplateIdAsync(welcomeEmailId);
 
-                    var (maximumSendSet, maximumSendSetting) = await _siteLookupService
+                    var maxSendTuple = await _siteLookupService
                         .GetSiteSettingIntAsync(site.Id,
-                            SiteSettingKey.Email.MaximumWelcomeEmailSendBlock);
+                        SiteSettingKey.Email.MaximumWelcomeEmailSendBlock);
+                    var maximumSendSet = maxSendTuple.Item1;
+                    var maximumSendSetting = maxSendTuple.Item2;
 
                     var maximumSend = maximumSendSet
                         ? maximumSendSetting
