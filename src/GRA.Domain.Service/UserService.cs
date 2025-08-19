@@ -470,7 +470,7 @@ namespace GRA.Domain.Service
             await _notificationRepository.RemoveByUserId(GetActiveUserId());
         }
 
-        public async Task<(int totalAddCount, int addUserId)>
+        public async Task<Tuple<int, int>>
             CountParticipantsToAdd(string username, string password)
         {
             ArgumentNullException.ThrowIfNull(username);
@@ -510,7 +510,7 @@ namespace GRA.Domain.Service
                 totalAdded += household.Count();
             }
 
-            return (totalAddCount: totalAdded, addUserId: authenticationResult.User.Id);
+            return Tuple.Create(totalAdded, authenticationResult.User.Id);
         }
 
         public async Task<GroupInfo> CreateGroup(int currentUserId,
