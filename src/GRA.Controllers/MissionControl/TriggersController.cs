@@ -72,12 +72,17 @@ namespace GRA.Controllers.MissionControl
         public async Task<IActionResult> Create()
         {
             var site = await GetCurrentSiteAsync();
-            var (maxPointLimitSet, maxPointLimit)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.MaxPointsPerTrigger);
-            var (minAllowedPointsSet, minAllowedPoints)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.DisallowTriggersBelowPoints);
+            var maxPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.MaxPointsPerTrigger);
+            var maxPointLimitSet = maxPointsSetting.Item1;
+            var maxPointLimit = maxPointsSetting.Item2;
+
+            var minPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.DisallowTriggersBelowPoints);
+            var minAllowedPointsSet = minPointsSetting.Item1;
+            var minAllowedPoints = minPointsSetting.Item2;
 
             var viewModel = new TriggersDetailViewModel
             {
@@ -123,9 +128,11 @@ namespace GRA.Controllers.MissionControl
 
             var badgeRequiredList = new List<int>();
             var challengeRequiredList = new List<int>();
-            var (lowPointThresholdSet, lowPointThreshold)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointThresholdSet = lowPointsSetting.Item1;
+            var lowPointThreshold = lowPointsSetting.Item2;
 
             var pointLimits = await GetPointLimitsAsync(model.Trigger);
 
@@ -443,9 +450,11 @@ namespace GRA.Controllers.MissionControl
                 return RedirectToAction("Index");
             }
             var badge = await _badgeService.GetByIdAsync(trigger.AwardBadgeId);
-            var (lowPointThresholdSet, lowPointThreshold)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointThresholdSet = lowPointsSetting.Item1;
+            var lowPointThreshold = lowPointsSetting.Item2;
 
             Attachment attachment = null;
             if (trigger.AwardAttachmentId != null)
@@ -567,9 +576,11 @@ namespace GRA.Controllers.MissionControl
             var badgeRequiredList = new List<int>();
             var challengeRequiredList = new List<int>();
 
-            var (lowPointThresholdSet, lowPointThreshold)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointThresholdSet = lowPointsSetting.Item1;
+            var lowPointThreshold = lowPointsSetting.Item2;
 
             model.LowPointThreshold = lowPointThresholdSet ? lowPointThreshold : null;
             model.MaxPointLimit = pointRestrictions.MaxAllowedAwardPoints;
@@ -890,9 +901,11 @@ namespace GRA.Controllers.MissionControl
             int page = 1)
         {
             var filter = new TriggerFilter(page);
-            var (lowPointThresholdSet, lowPointThreshold)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.LowPointThreshold);
+            var lowPointThresholdSet = lowPointsSetting.Item1;
+            var lowPointThreshold = lowPointsSetting.Item2;
 
             hideLowPoint = lowPointThreshold == 0;
 
@@ -1047,12 +1060,17 @@ namespace GRA.Controllers.MissionControl
             var result = new PointRestrictions();
             var pointLimitExceededMessage = new StringBuilder();
 
-            var (maxPointLimitSet, maxPointLimit)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.MaxPointsPerTrigger);
-            var (minAllowedPointsSet, minAllowedPoints)
-                = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
-                    SiteSettingKey.Triggers.DisallowTriggersBelowPoints);
+            var maxPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.MaxPointsPerTrigger);
+            var maxPointLimitSet = maxPointsSetting.Item1;
+            var maxPointLimit = maxPointsSetting.Item2;
+
+            var minPointsSetting = 
+                await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                SiteSettingKey.Triggers.DisallowTriggersBelowPoints);
+            var minAllowedPointsSet = minPointsSetting.Item1;
+            var minAllowedPoints = minPointsSetting.Item2;
 
             result.MaxAllowedAwardPoints = maxPointLimitSet ? maxPointLimit : null;
             result.MinAllowedTriggerPoints = minAllowedPoints;
