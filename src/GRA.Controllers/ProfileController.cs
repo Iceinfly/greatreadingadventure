@@ -177,10 +177,11 @@ namespace GRA.Controllers
                 try
                 {
                     // check if we're going to trip group membership requirements
-                    var (useGroups, maximumHousehold) =
-                        await GetSiteSettingIntAsync(SiteSettingKey
-                            .Users
-                            .MaximumHouseholdSizeBeforeGroup);
+                    var groupsSetting = await GetSiteSettingIntAsync(SiteSettingKey
+                        .Users
+                        .MaximumHouseholdSizeBeforeGroup); 
+                    var useGroups = groupsSetting.Item1; 
+                    var maximumHousehold = groupsSetting.Item2;
 
                     if (useGroups)
                     {
@@ -199,9 +200,11 @@ namespace GRA.Controllers
                                 false,
                                 false);
 
-                            var (totalAddCount, addUserId) =
-                                await _userService.CountParticipantsToAdd(model.Username,
-                                    model.Password);
+                            var addCounts =
+                                await _userService
+                                .CountParticipantsToAdd(model.Username, model.Password);
+                            var totalAddCount = addCounts.Item1;
+                            var addUserId = addCounts.Item2;
 
                             // +1 for household manager, counting the people we're adding so >
                             if (currentHousehold.Count() + 1 + totalAddCount > maximumHousehold)
@@ -260,8 +263,10 @@ namespace GRA.Controllers
                 return RedirectToAction(nameof(Household));
             }
 
-            var (useGroups, maximumHousehold) =
-                await GetSiteSettingIntAsync(SiteSettingKey.Users.MaximumHouseholdSizeBeforeGroup);
+            var groupsSetting = 
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.MaximumHouseholdSizeBeforeGroup); 
+            var useGroups = groupsSetting.Item1; 
+            var maximumHousehold = groupsSetting.Item2;
 
             if (useGroups)
             {
@@ -339,16 +344,20 @@ namespace GRA.Controllers
                 viewModel.AskFirstTime = EmptyNoYes();
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText)
-                = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var emailSubSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var askEmailSubscription = emailSubSetting.Item1;
+            var askEmailSubscriptionText = emailSubSetting.Item2;
             if (askEmailSubscription)
             {
                 viewModel.AskEmailSubscription = EmptyNoYes();
                 viewModel.AskEmailSubscriptionText = askEmailSubscriptionText;
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var activitySetting =
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var askActivityGoal = activitySetting.Item1;
+            var defaultDailyGoal = activitySetting.Item2;
             if (askActivityGoal)
             {
                 viewModel.User.DailyPersonalGoal = defaultDailyGoal;
@@ -389,8 +398,10 @@ namespace GRA.Controllers
                 ModelState.Remove(nameof(model.IsFirstTime));
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText)
-                = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var emailSubSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var askEmailSubscription = emailSubSetting.Item1;
+            var askEmailSubscriptionText = emailSubSetting.Item2;
             if (!askEmailSubscription)
             {
                 ModelState.Remove(nameof(model.EmailSubscriptionRequested));
@@ -407,8 +418,10 @@ namespace GRA.Controllers
                 }
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var activitySetting =
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var askActivityGoal = activitySetting.Item1;
+            var defaultDailyGoal = activitySetting.Item2;
 
             bool askAge = false;
             bool askSchool = false;
@@ -1404,16 +1417,20 @@ namespace GRA.Controllers
                     .Name;
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText)
-                = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var emailSubSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var askEmailSubscription = emailSubSetting.Item1;
+            var askEmailSubscriptionText = emailSubSetting.Item2;
             if (askEmailSubscription)
             {
                 viewModel.AskEmailSubscription = true;
                 viewModel.AskEmailSubscriptionText = askEmailSubscriptionText;
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var activitySetting =
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var askActivityGoal = activitySetting.Item1;
+            var defaultDailyGoal = activitySetting.Item2;
             if (askActivityGoal)
             {
                 var pointTranslation = await _pointTranslationService
@@ -1456,8 +1473,10 @@ namespace GRA.Controllers
                         _sharedLocalizer[DisplayNames.School]]);
             }
 
-            var (askEmailSubscription, askEmailSubscriptionText) = await GetSiteSettingStringAsync(
-                SiteSettingKey.Users.AskEmailSubPermission);
+            var emailSubSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
+            var askEmailSubscription = emailSubSetting.Item1;
+            var askEmailSubscriptionText = emailSubSetting.Item2;
             if (askEmailSubscription && model.User.IsEmailSubscribed
                 && string.IsNullOrWhiteSpace(model.User.Email))
             {
@@ -1466,8 +1485,10 @@ namespace GRA.Controllers
                     _sharedLocalizer[Annotations.Validate.EmailSubscription]);
             }
 
-            var (askActivityGoal, defaultDailyGoal) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var activitySetting =
+                await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var askActivityGoal = activitySetting.Item1;
+            var defaultDailyGoal = activitySetting.Item2;
 
             if (ModelState.IsValid)
             {
