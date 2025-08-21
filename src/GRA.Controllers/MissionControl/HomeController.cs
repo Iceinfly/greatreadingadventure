@@ -164,8 +164,10 @@ namespace GRA.Controllers.MissionControl
             if (UserHasPermission(Permission.ManageSites))
             {
                 // set unsub base if not set
-                var (isSet, unsubBase) = await _siteLookupService.GetSiteSettingStringAsync(site.Id,
-                    SiteSettingKey.Email.UnsubscribeBase);
+                var unsubSetting = await _siteLookupService.GetSiteSettingStringAsync(
+                    site.Id, SiteSettingKey.Email.UnsubscribeBase);
+                var isSet = unsubSetting.Item1;
+                var unsubBase = unsubSetting.Item2;
 
                 if (!isSet || string.IsNullOrEmpty(unsubBase))
                 {
