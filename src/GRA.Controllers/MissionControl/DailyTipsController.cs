@@ -143,8 +143,10 @@ namespace GRA.Controllers.MissionControl
                 {
                     using var archive = new ZipArchive(viewmodel.UploadedFile.OpenReadStream());
 
-                    var (added, issues)
-                        = await _dailyLiteracyTipService.AddImagesZipAsync(dailyTip.Id, archive);
+                    var addResult =
+                        await _dailyLiteracyTipService.AddImagesZipAsync(dailyTip.Id, archive);
+                    var added = addResult.Item1;
+                    var issues = addResult.Item2;
 
                     if (issues?.Count > 0)
                     {
