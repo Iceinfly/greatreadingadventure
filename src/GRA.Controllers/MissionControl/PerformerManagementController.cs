@@ -1034,10 +1034,8 @@ namespace GRA.Controllers.MissionControl
                 SetupSupplementalText = settings.SetupSupplementalText
             };
 
-            var intervalSetting =
-                await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
-            var hasIntervalString = intervalSetting.Item1;
-            var intervalString = intervalSetting.Item2;
+            var (hasIntervalString, intervalString)
+                = await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
 
             if (hasIntervalString)
             {
@@ -1106,10 +1104,8 @@ namespace GRA.Controllers.MissionControl
                 SetupSupplementalText = settings.SetupSupplementalText
             };
 
-            var intervalSetting =
-                await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
-            var hasIntervalString = intervalSetting.Item1;
-            var intervalString = intervalSetting.Item2;
+            var (hasIntervalString, intervalString)
+                = await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
 
             if (hasIntervalString)
             {

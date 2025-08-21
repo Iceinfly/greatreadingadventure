@@ -130,9 +130,7 @@ namespace GRA.Controllers.MissionControl
         [HttpGet]
         public async Task<FileStreamResult> Download(int id)
         {
-            var results = await _reportService.GetReportResultsAsync(id);
-            var request = results.Item1;
-            var criterion = results.Item2;
+            var (request, criterion) = await _reportService.GetReportResultsAsync(id);
 
             PageTitle = request.Name ?? "Report Results";
 
@@ -313,10 +311,8 @@ namespace GRA.Controllers.MissionControl
                 criterion.TriggerList = string.Join(",", viewModel.TriggerList);
             }
 
-            var maxActivitySetting = await _siteLookupService.GetSiteSettingIntAsync(
-                siteId, SiteSettingKey.Users.MaximumActivityPermitted);
-            var IsSet = maxActivitySetting.Item1;
-            var SetValue = maxActivitySetting.Item2;
+            var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(siteId,
+                SiteSettingKey.Users.MaximumActivityPermitted);
 
             if (IsSet)
             {
@@ -368,9 +364,7 @@ namespace GRA.Controllers.MissionControl
         {
             try
             {
-                var results = await _reportService.GetReportResultsAsync(id);
-                var request = results.Item1;
-                var criterion = results.Item2;
+                var (request, criterion) = await _reportService.GetReportResultsAsync(id);
 
                 PageTitle = request.Name ?? "Report Results";
 

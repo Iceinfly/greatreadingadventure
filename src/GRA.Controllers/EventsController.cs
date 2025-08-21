@@ -368,10 +368,9 @@ namespace GRA.Controllers
                 }
             }
 
-            var setting = await _siteLookupService.GetSiteSettingStringAsync(site.Id,
-                SiteSettingKey.Events.CommunityExperienceDescription);
-            var descriptionTextSet = setting.Item1;
-            var communityExperienceDescription = setting.Item2;
+            var (descriptionTextSet, communityExperienceDescription) = await _siteLookupService
+                .GetSiteSettingStringAsync(site.Id,
+                    SiteSettingKey.Events.CommunityExperienceDescription);
 
             if (descriptionTextSet)
             {
