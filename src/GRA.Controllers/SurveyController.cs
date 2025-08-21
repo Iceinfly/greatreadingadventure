@@ -26,7 +26,7 @@ namespace GRA.Controllers
             var siteId = GetCurrentSiteId();
             var survey = await _siteLookupService.GetSiteSettingStringAsync(siteId,
                 SiteSettingKey.Users.SurveyUrl);
-            if (survey.IsSet)
+            if (survey.Item1)
             {
                 var askFirstTime = await _siteLookupService.GetSiteSettingBoolAsync(siteId,
                 SiteSettingKey.Users.AskIfFirstTime);
@@ -34,17 +34,17 @@ namespace GRA.Controllers
                 {
                     var firstTimeSurvery = await _siteLookupService.GetSiteSettingStringAsync(siteId,
                         SiteSettingKey.Users.FirstTimeSurveyUrl);
-                    if (firstTimeSurvery.IsSet)
+                    if (firstTimeSurvery.Item1)
                     {
                         var user = await _userService.GetDetails(GetActiveUserId());
                         if (user.IsFirstTime)
                         {
-                            return Redirect(firstTimeSurvery.SetValue);
+                            return Redirect(firstTimeSurvery.Item2);
                         }
                     }
                 }
 
-                return Redirect(survey.SetValue);
+                return Redirect(survey.Item2);
             }
 
             return RedirectToAction(nameof(HomeController.Index), "Home");
