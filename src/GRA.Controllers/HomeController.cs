@@ -365,9 +365,11 @@ namespace GRA.Controllers
                 viewModel.PercentComplete = Math.Min(
                         (int)(viewModel.ActivityEarned * 100 / viewModel.TotalProgramGoal), 100);
 
-                var (siteReadingGoalSet, siteReadingGoal)
-                    = await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
+                var readingGoal =
+                    await _siteLookupService.GetSiteSettingIntAsync(GetCurrentSiteId(),
                         SiteSettingKey.Site.ReadingGoalInMinutes);
+                var siteReadingGoalSet = readingGoal.Item1;
+                var siteReadingGoal = readingGoal.Item2;
 
                 if (siteReadingGoalSet)
                 {

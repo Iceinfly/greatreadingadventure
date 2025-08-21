@@ -561,7 +561,10 @@ namespace GRA.Controllers.PerformerRegistration
                 }
             }
 
-            var (hasIntervalString, intervalString) = await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
+            var intervalSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
+            var hasIntervalString = intervalSetting.Item1;
+            var intervalString = intervalSetting.Item2;
 
             if (hasIntervalString)
             {
@@ -679,8 +682,11 @@ namespace GRA.Controllers.PerformerRegistration
             model.SetupSupplementalText = settings.SetupSupplementalText;
             model.BackToBackSelection = new SelectList(new[] { GRA.Defaults.BackToBackInterval });
 
-            var (hasIntervalString, intervalString)
-                = await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
+            var intervalSetting =
+                await GetSiteSettingStringAsync(SiteSettingKey.Performer.BackToBackInterval);
+            var hasIntervalString = intervalSetting.Item1;
+            var intervalString = intervalSetting.Item2;
+
             if (hasIntervalString)
             {
                 var intervalOptions = intervalString.Split(new[] { ',', ' ' },

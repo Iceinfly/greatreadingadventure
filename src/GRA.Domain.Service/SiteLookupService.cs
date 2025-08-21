@@ -165,7 +165,7 @@ namespace GRA.Domain.Service
         /// <returns>A tuple, the bool is true if the setting is present and a number with the
         /// value being the number. The bool is false if the setting is not set or is not a parsable
         /// integer.</returns>
-        public async Task<(bool IsSet, int SetValue)> GetSiteSettingIntAsync(int siteId, string key)
+        public async Task<Tuple<bool,int>> GetSiteSettingIntAsync(int siteId, string key)
         {
             var settingDefinition = SiteSettingDefinitions.DefinitionDictionary[key];
 
@@ -188,9 +188,9 @@ namespace GRA.Domain.Service
             if (!string.IsNullOrEmpty(settingValueString)
                 && int.TryParse(settingValueString, out int value))
             {
-                return (IsSet: true, SetValue: value);
+                return Tuple.Create(true, value);
             }
-            return (IsSet: false, SetValue: default);
+            return Tuple.Create(false, 0);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace GRA.Domain.Service
         /// <param name="key">The site setting key value (a string, up to 255 characters)</param>
         /// <returns>A tuple, the bool is true if the setting is present and a string with the
         /// value. The bool is false if the setting is not set.</returns>
-        public async Task<(bool IsSet, string SetValue)> GetSiteSettingStringAsync(
+        public async Task<Tuple<bool,string>> GetSiteSettingStringAsync(
             int siteId, string key)
         {
             var settingDefinition = SiteSettingDefinitions.DefinitionDictionary[key];
@@ -223,9 +223,9 @@ namespace GRA.Domain.Service
 
             if (!string.IsNullOrEmpty(settingValueString))
             {
-                return (IsSet: true, SetValue: settingValueString);
+                return Tuple.Create(true, settingValueString);
             }
-            return (IsSet: false, SetValue: string.Empty);
+            return Tuple.Create(false, string.Empty);
         }
 
         public SiteStage GetSiteStage(Site site)
