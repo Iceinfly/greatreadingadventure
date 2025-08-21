@@ -43,8 +43,11 @@ namespace GRA.Controllers.MissionControl
             }
             else
             {
-                var (result, message)
-                    = await _groupTypesService.Add(GetActiveUserId(), viewModel.GroupType.Name);
+                var addResult =
+                    await _groupTypesService.Add(GetActiveUserId(), viewModel.GroupType.Name);
+                var result = addResult.Item1;
+                var message = addResult.Item2;
+
                 if (result)
                 {
                     AlertSuccess = $"Successfully added group type <strong>{message}</strong>.";
@@ -96,9 +99,10 @@ namespace GRA.Controllers.MissionControl
             }
             else
             {
-                var (result, message) = await _groupTypesService.Edit(GetActiveUserId(),
-                    viewModel.GroupType.Id,
-                    viewModel.GroupType.Name);
+                var editResult = await _groupTypesService.Edit(GetActiveUserId(),
+                    viewModel.GroupType.Id, viewModel.GroupType.Name);
+                var result = editResult.Item1;
+                var message = editResult.Item2;
 
                 if (result)
                 {
@@ -134,8 +138,10 @@ namespace GRA.Controllers.MissionControl
                     });
             }
 
-            var (useGroups, maximumHousehold) =
+            var maxHouseholdTuple =
                 await GetSiteSettingIntAsync(SiteSettingKey.Users.MaximumHouseholdSizeBeforeGroup);
+            var useGroups = maxHouseholdTuple.Item1;
+            var maximumHousehold = maxHouseholdTuple.Item2;
 
             return View(new GroupTypesListViewModel
             {
