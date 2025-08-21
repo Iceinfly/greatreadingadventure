@@ -1246,12 +1246,12 @@ namespace GRA.Controllers.MissionControl
                 viewModel.LanguageNames.Add(ln);
             }
 
-            var (isSet, welcomeEmailTemplateId) = await _siteLookupService
+            var welcomeSetting = await _siteLookupService
                 .GetSiteSettingIntAsync(GetCurrentSiteId(), SiteSettingKey.Email.WelcomeTemplateId);
 
-            if (isSet && welcomeEmailTemplateId > 0)
+            if (welcomeSetting.Item1 && welcomeSetting.Item2 > 0)
             {
-                viewModel.WelcomeEmailTemplateId = welcomeEmailTemplateId;
+                viewModel.WelcomeEmailTemplateId = welcomeSetting.Item2;
                 viewModel.WelcomeEmailsTotal = await _userService.GetWelcomeRecipientsCountAsync();
             }
 
