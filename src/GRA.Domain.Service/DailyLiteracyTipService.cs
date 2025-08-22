@@ -65,7 +65,7 @@ namespace GRA.Domain.Service
                 image);
         }
 
-        public Task<(int, IList<string>)> AddImagesZipAsync(int dailyLiteracyTipId,
+        public Task<Tuple<int, IList<string>>> AddImagesZipAsync(int dailyLiteracyTipId,
             ZipArchive archive)
         {
             VerifyManagementPermission();
@@ -215,7 +215,7 @@ namespace GRA.Domain.Service
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design",
             "CA1031:Do not catch general exception types",
             Justification = "Don't fail the entire import on issues with single images")]
-        private async Task<(int, IList<string>)> AddImagesZipInternalAsync(int dailyLiteracyTipId,
+        private async Task<Tuple<int, IList<string>>> AddImagesZipInternalAsync(int dailyLiteracyTipId,
             ZipArchive archive)
         {
             VerifyManagementPermission();
@@ -269,7 +269,7 @@ namespace GRA.Domain.Service
                 }
             }
 
-            return (added, issues);
+            return Tuple.Create<int, IList<string>>(added, issues);
         }
     }
 }

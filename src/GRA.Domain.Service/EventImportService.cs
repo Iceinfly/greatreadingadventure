@@ -32,7 +32,7 @@ namespace GRA.Domain.Service
                 ?? throw new ArgumentNullException(nameof(triggerService));
         }
 
-        public async Task<(ImportStatus, string)> FromCsvAsync(StreamReader csvStream)
+        public async Task<Tuple<ImportStatus, string>> FromCsvAsync(StreamReader csvStream)
         {
             var notes = new List<string>();
             using (var csv = new CsvHelper.CsvReader(csvStream, CultureInfo.InvariantCulture))
@@ -147,19 +147,19 @@ namespace GRA.Domain.Service
                     }
                     if (issues > 0)
                     {
-                        return (ImportStatus.Warning, returnMessage.ToString());
+                        return Tuple.Create(ImportStatus.Warning, returnMessage.ToString());
                     }
                     if (notes.Count > 0)
                     {
-                        return (ImportStatus.Info, returnMessage.ToString());
+                        return Tuple.Create(ImportStatus.Info, returnMessage.ToString());
                     }
-                    return (ImportStatus.Success, returnMessage.ToString());
+                    return Tuple.Create(ImportStatus.Success, returnMessage.ToString());
                 }
                 catch (Exception ex)
                 {
                     string error = $"CSV parsing error: {ex.Message}";
                     _logger.LogError(error);
-                    return (ImportStatus.Danger, error);
+                    return Tuple.Create(ImportStatus.Danger, error);
                 }
             }
         }

@@ -125,7 +125,7 @@ namespace GRA.Domain.Service
             return availableReports;
         }
 
-        public async Task<(ReportRequest request, ReportCriterion criterion)>
+        public async Task<Tuple<ReportRequest, ReportCriterion>>
             GetReportResultsAsync(int reportRequestId)
         {
             if (HasPermission(Permission.ViewAllReporting))
@@ -152,7 +152,7 @@ namespace GRA.Domain.Service
                 var reportCriteria = await _reportCriterionRepository
                     .GetByIdAsync(reportRequest.ReportCriteriaId);
 
-                return (reportRequest, reportCriteria);
+                return Tuple.Create(reportRequest, reportCriteria);
             }
             else
             {
