@@ -150,9 +150,11 @@ namespace GRA.Controllers.MissionControl
                 SystemList = new SelectList(await _siteService.GetSystemList(), "Id", "Name")
             };
 
-            (viewModel.ShowGeolocation, viewModel.GoogleMapsAPIKey)
+            var mapsSetting
                 = await _siteLookupService.GetSiteSettingStringAsync(GetCurrentSiteId(),
                     SiteSettingKey.Events.GoogleMapsAPIKey);
+            viewModel.ShowGeolocation = mapsSetting.Item1;
+            viewModel.GoogleMapsAPIKey = mapsSetting.Item2;
 
             return View(viewModel);
         }
