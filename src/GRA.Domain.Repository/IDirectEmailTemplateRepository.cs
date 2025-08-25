@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GRA.Domain.Model;
 using GRA.Domain.Model.Filters;
@@ -12,7 +13,7 @@ namespace GRA.Domain.Repository
 
         public Task<IDictionary<int, string>> GetAllUserTemplatesAsync();
 
-        public Task<(int, List<int>)> GetIdAndLanguagesBySystemIdAsync(string systemEmailId);
+        public Task<Tuple<int, List<int>>> GetIdAndLanguagesBySystemIdAsync(string systemEmailId);
 
         public Task<IDictionary<int, bool>> GetLanguageUnsubAsync(int directEmailTemplateId);
 

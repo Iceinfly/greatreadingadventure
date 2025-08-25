@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
@@ -59,7 +60,7 @@ namespace GRA.Data.Repository
                 .ToDictionaryAsync(k => k.Id, v => v.Description);
         }
 
-        public async Task<(int, List<int>)> GetIdAndLanguagesBySystemIdAsync(string systemEmailId)
+        public async Task<Tuple<int, List<int>>> GetIdAndLanguagesBySystemIdAsync(string systemEmailId)
         {
             var directEmailTemplate = await DbSet
                 .AsNoTracking()
@@ -77,7 +78,7 @@ namespace GRA.Data.Repository
                 .Select(_ => _.LanguageId)
                 .ToListAsync();
 
-            return (directEmailTemplate.Id, languages);
+            return Tuple.Create(directEmailTemplate.Id, languages);
         }
 
         public async Task<IDictionary<int, bool>> GetLanguageUnsubAsync(int directEmailTemplateId)
