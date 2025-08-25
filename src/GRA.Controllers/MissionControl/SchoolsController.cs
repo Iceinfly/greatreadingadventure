@@ -208,8 +208,9 @@ namespace GRA.Controllers.MissionControl
             if (ModelState.ErrorCount == 0)
             {
                 using var streamReader = new StreamReader(schoolFileCsv?.OpenReadStream());
-                (ImportStatus status, string message)
-                    = await _schoolImportService.FromCsvAsync(streamReader);
+                var result = await _schoolImportService.FromCsvAsync(streamReader);
+                var status = result.Item1;
+                var message = result.Item2;
 
                 switch (status)
                 {
