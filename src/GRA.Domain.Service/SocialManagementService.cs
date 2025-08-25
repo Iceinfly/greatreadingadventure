@@ -75,8 +75,10 @@ namespace GRA.Domain.Service
                 return;
             }
 
-            (social.ImageLink, social.ImageWidth, social.ImageHeight)
-                = HandleSocialImage(filename, imageBytes);
+            var result = HandleSocialImage(filename, imageBytes);
+            social.ImageLink = result.Item1;
+            social.ImageWidth = result.Item2;
+            social.ImageHeight = result.Item3;
 
             await _socialRepository.AddSaveAsync(social);
 
@@ -186,8 +188,10 @@ namespace GRA.Domain.Service
                 return;
             }
 
-            (social.ImageLink, social.ImageWidth, social.ImageHeight)
-                = HandleSocialImage(filename, imageBytes);
+            var result = HandleSocialImage(filename, imageBytes);
+            social.ImageLink = result.Item1;
+            social.ImageWidth = result.Item2;
+            social.ImageHeight = result.Item3;
 
             await _socialRepository.UpdateSaveAsync(social);
 
@@ -252,7 +256,7 @@ namespace GRA.Domain.Service
                 .ResolveContentPath($"site{GetCurrentSiteId()}/{SocialPath}/{filename}");
         }
 
-        private (string ImageLink, int ImageWidth, int ImageHeight) HandleSocialImage(
+        private Tuple<string, int, int> HandleSocialImage(
             string filename,
             byte[] imageBytes)
         {
@@ -270,7 +274,7 @@ namespace GRA.Domain.Service
 
             using var image = SixLabors.ImageSharp.Image.Load(imageBytes);
 
-            return (GetLinkPath(filename), image.Width, image.Height);
+            return Tuple.Create(GetLinkPath(filename), image.Width, image.Height);
         }
     }
 }
