@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GRA.Domain.Model;
 
@@ -8,6 +9,6 @@ namespace GRA.Domain.Repository
     {
         Task<GroupType> GetDefaultAsync(int siteid);
         Task<IEnumerable<GroupType>> GetAllForListAsync(int siteId);
-        Task<(IEnumerable<GroupType>, int)> GetAllPagedAsync(int siteId, int skip, int take);
+        Task<Tuple<IEnumerable<GroupType>, int>> GetAllPagedAsync(int siteId, int skip, int take);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper.QueryableExtensions;
@@ -40,7 +41,7 @@ namespace GRA.Data.Repository
                 .ToListAsync();
         }
 
-        public async Task<(IEnumerable<GroupType>, int)> GetAllPagedAsync(int siteId,
+        public async Task<Tuple<IEnumerable<GroupType>, int>> GetAllPagedAsync(int siteId,
             int skip,
             int take)
         {
@@ -53,7 +54,7 @@ namespace GRA.Data.Repository
                 .Take(take)
                 .ProjectTo<GroupType>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-            return (list, count);
+            return Tuple.Create((IEnumerable<GroupType>)list, count);
         }
     }
 }
