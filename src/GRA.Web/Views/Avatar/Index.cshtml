@@ -434,7 +434,6 @@
             $(divId).empty();
             let layerObj = CurrentSelectedLayer();
             let layerId = $(layerObj).data("layer");
-            // if we're dealing with bundles
             if (layerId == 999) {
                 selectedIds = GetAllSelectedItems();
                 selectType = "Bundle";
@@ -444,67 +443,82 @@
             }
             $.ajax(
                 {
-                    type: 'GET',
-                    traditional: true,
-                    contentType: 'application/json; charset=utf-8',
-                    data:
-                    {
-                        type: selectType,
-                        layerId: layerId,
-                        selectedItemId: $.makeArray(selected),
-                        bundleId: bundleId,
-                        selectedItemIds: selectedIds
-                    },
-                    dataType: 'html',
-                    url: "@Url.Action(nameof(AvatarController.GetLayersItems))",
-                    success: function (data) {
-                        $($(divId).parent()).html(data);
-                    },
-                    error: function () {
-                        window.location.href = "@(Url.Action(nameof(SignInController.Index)))"
-                    }
-                })
+                type: 'GET',
+                traditional: true,
+                contentType: 'application/json; charset=utf-8',
+                data: 
+                {
+                    type: selectType,
+                    layerId: layerId,
+                    selectedItemId: $.makeArray(selected),
+                    bundleId: bundleId,
+                    selectedItemIds: selectedIds
+                },
+                dataType: 'html',
+                url: "@Url.Action(nameof(AvatarController.GetLayersItems))",
+                success: function (data) {
+                    $($(divId).parent()).html(data);
+                },
+                error: function () {
+                    window.location.href = "@(Url.Action(nameof(SignInController.Index)))"
+                }
+            })
                 .then(function () {
-                    let drag = true;
-                    let infin = true;
                     let slickSettings = [];
                     let itemIndex = $(divId).data("index");
                     let totalitems = $(divId).data("count");
-                    let lazyLoading = totalitems > 24 ? true : false;
-                    //Prevents the repeating of the slick items on mobile
-                    if (layerId == 999 && totalitems / 12 <= 1) {
-                        drag = false;
-                        infin = false;
+                    let lazyLoading = totalitems > 24;
+                    const w = window.innerWidth || document.documentElement.clientWidth;
+                    const perRowNow = (selectType === "Color")
+                        ? (w < 500 ? 6 : (w < 768 ? 8 : (w < 992 ? 10 : 12)))
+                        : (w < 500 ? 3 : (w < 768 ? 3 : (w < 992 ? 4 : 6)));
+
+                    const perPageNow = perRowNow * rowCount;
+
+                    const infinBase = totalitems > perPageNow;
+
+                    const dragBase = (w < 768) && infinBase;
+
+                    function pushBreak(bp, cols, drag, arrows) {
+                        const perPage = cols * rowCount;
+                        const inf = totalitems > perPage;
+                        const init = Math.floor(itemIndex / (rowCount * cols)) * cols;
+                        slickSettings.push(SlickSettings(bp, init, cols, drag && inf, arrows, inf));
                     }
-                    if (selectType == "Color") {
-                        slickSettings.push(SlickSettings(768, Math.floor(itemIndex / (rowCount * 8)) * 8, 8, false, true));
-                        slickSettings.push(SlickSettings(992, Math.floor(itemIndex / (rowCount * 10)) * 10, 10, false, true));
-                        slickSettings.push(SlickSettings(1200, Math.floor(itemIndex / (rowCount * 12)) * 12, 12, false, true));
-                    }
-                    else {
-                        slickSettings.push(SlickSettings(500, Math.floor(itemIndex / (rowCount * 3)) * 3, 3, drag, false));
-                        slickSettings.push(SlickSettings(768, Math.floor(itemIndex / (rowCount * 3)) * 3, 3, false, true));
-                        slickSettings.push(SlickSettings(992, Math.floor(itemIndex / (rowCount * 4)) * 4, 4, false, true));
-                        slickSettings.push(SlickSettings(1200, Math.floor(itemIndex / (rowCount * 6)) * 6, 6, false, true));
+
+                    if (selectType === "Color") {
+                        pushBreak(768, 8, false, true);
+                        pushBreak(992, 10, false, true);
+                        pushBreak(1200, 12, false, true);
+                    } 
+                    else 
+                    {
+                        pushBreak(500, 3, true, false);   // >=500px
+                        pushBreak(768, 3, false, true);   // >=768px
+                        pushBreak(992, 4, false, true);   // >=992px
+                        pushBreak(1200, 6, false, true);  // >=1200px
                     }
                     $(divId).slick({
                         arrows: false,
-                        infinite: infin,
+                        infinite: infinBase,
                         initialSlide: Math.floor(itemIndex / rowCount),
                         lazyLoad: 'anticipated',
                         mobileFirst: true,
-                        responsive: slickSettings,
                         rows: rowCount,
                         slidesPerRow: 1,
+                        slidesToShow: perRowNow,
+                        slidesToScroll: perRowNow,
                         swipeToSlide: true,
+                        draggable: dragBase,
                         touchThreshold: 10,
-                        variableWidth: true,
+                        variableWidth: false,
                         waitForAnimate: false,
+                        responsive: slickSettings
                     });
                     if (layerId == 999) {
                         let item = GetFirstActiveSelectedItem();
                         UpdateRemoveButtonForBundle(item);
-                    }
+                    } 
                     else {
                         prevLayerSelected = [];
                     }
@@ -512,12 +526,13 @@
         }
 
         //Creates the slick data
-        function SlickSettings(breakpnt, initslide, toshow, drag, arrows) {
+        function SlickSettings(breakpnt, initslide, toshow, drag, arrows, infiniteVal) {
             return {
                 breakpoint: breakpnt,
                 settings: {
                     arrows: arrows,
                     draggable: drag,
+                    infinite: infiniteVal,
                     initialSlide: initslide,
                     slidesToScroll: toshow,
                     slidesToShow: toshow,
