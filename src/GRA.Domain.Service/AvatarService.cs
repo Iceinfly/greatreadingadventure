@@ -624,7 +624,9 @@ namespace GRA.Domain.Service
                                 await _avatarElementRepository.AddAsync(requestingUser, element);
                                 File.Copy(
                                     Path.Combine(itemAssetPath, $"{color.Color}.png"),
-                                    Path.Combine(itemPath, $"item_{color.Id}.png"));
+                                    Path.Combine(itemPath, $"item_{color.Id}.png")
+                                    .Replace(Path.DirectorySeparatorChar, '/')
+                                    );
                                 currentElement++;
                             }
                         }
@@ -634,6 +636,7 @@ namespace GRA.Domain.Service
                             {
                                 AvatarItemId = item.Id,
                                 Filename = Path.Combine(itemRoot, "item.png")
+                                .Replace(Path.DirectorySeparatorChar, '/')
                             };
                             await _avatarElementRepository.AddAsync(requestingUser, element);
                             File.Copy(Path.Combine(itemAssetPath, "item.png"),
