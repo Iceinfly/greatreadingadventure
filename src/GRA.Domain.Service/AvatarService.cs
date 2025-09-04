@@ -620,13 +620,13 @@ namespace GRA.Domain.Service
                                     AvatarItemId = item.Id,
                                     AvatarColorId = color.Id,
                                     Filename = Path.Combine(itemRoot, $"item_{color.Id}.png")
+                                    .Replace(Path.DirectorySeparatorChar, '/')
                                 };
                                 await _avatarElementRepository.AddAsync(requestingUser, element);
                                 File.Copy(
                                     Path.Combine(itemAssetPath, $"{color.Color}.png"),
                                     Path.Combine(itemPath, $"item_{color.Id}.png")
-                                    .Replace(Path.DirectorySeparatorChar, '/')
-                                    );
+                                );
                                 currentElement++;
                             }
                         }
