@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using GRA.Abstract;
 using Microsoft.Extensions.Configuration;
 
@@ -42,13 +41,12 @@ namespace GRA
             }
             if (!string.IsNullOrEmpty(filePath))
             {
-                var normalized = filePath.Replace('\\', '/').TrimStart('/');
-
-                if (!path.EndsWith("/", StringComparison.Ordinal))
+                if (!path.EndsWith("/", System.StringComparison.OrdinalIgnoreCase)
+                    && !filePath.StartsWith("/", System.StringComparison.OrdinalIgnoreCase))
                 {
                     path += '/';
                 }
-                path += normalized;
+                path += filePath;
             }
             return path;
         }
