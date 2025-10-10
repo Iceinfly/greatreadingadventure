@@ -116,6 +116,8 @@ namespace GRA.Domain.Service
             return currentLayer;
         }
 
+        private string BuildItemRootPath(int siteId, int layerId, int itemId) =>
+            Path.Combine($"site{siteId}", "avatars", $"layer{layerId}", $"item{itemId}");
         public async Task DeleteItemAsync(int id)
         {
             VerifyManagementPermission();
@@ -210,6 +212,12 @@ namespace GRA.Domain.Service
         public async Task<ICollection<AvatarItem>> GetItemsByLayerAsync(int layerId)
         {
             return await _avatarItemRepository.GetByLayerAsync(layerId);
+        }
+
+        public string GetItemThumbnailRelativePath(Model.AvatarItem item, int? siteId = null)
+        {
+            int site = siteId ?? GetCurrentSiteId();
+            return Path.Combine(BuildItemRootPath(site, item.AvatarLayerId, item.Id), "thumbnail.jpg");
         }
 
         public async Task<int> GetLayerAvailableItemCountAsync(int layerId)
@@ -607,7 +615,6 @@ namespace GRA.Domain.Service
                         {
                             Directory.CreateDirectory(itemPath);
                         }
-                        item.Thumbnail = Path.Combine(itemRoot, "thumbnail.jpg");
                         File.Copy(Path.Combine(itemAssetPath, "thumbnail.jpg"),
                             Path.Combine(itemPath, "thumbnail.jpg"));
                         await _avatarItemRepository.UpdateAsync(requestingUser, item);

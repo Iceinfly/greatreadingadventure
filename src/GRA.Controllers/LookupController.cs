@@ -74,7 +74,8 @@ namespace GRA.Controllers
         {
             var bundle = await _avatarService.GetBundleByIdAsync(id, true);
             var thumbnailList = bundle.AvatarItems
-                .Select(_ => _pathResolver.ResolveContentPath(_.Thumbnail))
+                .Select(_ => _pathResolver.ResolveContentPath(
+                    _avatarService.GetItemThumbnailRelativePath(_)))
                 .ToList();
 
             return Json(thumbnailList);

@@ -100,7 +100,8 @@ namespace GRA.Controllers.MissionControl
                 model.Bundle.AvatarItems = await _avatarService.GetItemsByIdsAsync(itemList);
                 foreach (var item in model.Bundle.AvatarItems)
                 {
-                    item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
             model.Layers = new SelectList(await _avatarService.GetLayersAsync(), "Id", "Name");
@@ -137,7 +138,8 @@ namespace GRA.Controllers.MissionControl
             }
             foreach (var item in bundle.AvatarItems)
             {
-                item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
             }
 
             var viewModel = new BundlesDetailViewModel()
@@ -190,7 +192,8 @@ namespace GRA.Controllers.MissionControl
                 model.Bundle.AvatarItems = await _avatarService.GetItemsByIdsAsync(itemList);
                 foreach (var item in model.Bundle.AvatarItems)
                 {
-                    item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
             model.Layers = new SelectList(await _avatarService.GetLayersAsync(), "Id", "Name");
@@ -306,7 +309,8 @@ namespace GRA.Controllers.MissionControl
             {
                 if (!string.IsNullOrWhiteSpace(item.Thumbnail))
                 {
-                    item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
 
@@ -416,7 +420,8 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var item in itemList.Data)
             {
-                item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
             }
 
             if (itemList.Data.Count > 0)

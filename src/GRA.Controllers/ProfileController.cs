@@ -1078,8 +1078,15 @@ namespace GRA.Controllers
                         .GetBundleByIdAsync(item.AvatarBundleId.Value, true);
                     if (bundle.AvatarItems.Count > 0)
                     {
-                        itemModel.BadgeFilename = _pathResolver.ResolveContentPath(
-                            bundle.AvatarItems.First().Thumbnail);
+                        var first = bundle.AvatarItems.First();
+                        if (first != null)
+                        {
+                            itemModel.BadgeFilename = _pathResolver
+                                .ResolveContentFilePath(
+                                _avatarService
+                                .GetItemThumbnailRelativePath(first)
+                                );
+                        }
                         if (bundle.AvatarItems.Count > 1)
                         {
                             var bundleLink = Url.Action(nameof(AvatarController.Index),

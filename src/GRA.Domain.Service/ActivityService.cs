@@ -17,6 +17,7 @@ namespace GRA.Domain.Service
 {
     public class ActivityService : Abstract.BaseUserService<UserService>
     {
+        private readonly AvatarService _avatarService;
         private readonly IAttachmentRepository _attachmentRepository;
         private readonly IAvatarBundleRepository _avatarBundleRepository;
         private readonly IAvatarItemRepository _avatarItemRepository;
@@ -69,6 +70,7 @@ namespace GRA.Domain.Service
             IUserRepository userRepository,
             IVendorCodeRepository vendorCodeRepository,
             IVendorCodeTypeRepository vendorCodeTypeRepository,
+            AvatarService avatarService,
             LanguageService languageService,
             MailService mailService,
             MessageTemplateService messageTemplateService,
@@ -106,6 +108,7 @@ namespace GRA.Domain.Service
 
             _attachmentRepository = attachmentRepository;
             _avatarBundleRepository = avatarBundleRepository;
+            _avatarService = avatarService;
             _avatarItemRepository = avatarItemRepository;
             _badgeRepository = badgeRepository;
             _bookRepository = bookRepository;
@@ -1572,13 +1575,19 @@ namespace GRA.Domain.Service
                 {
                     await _avatarItemRepository.AddUserItemsAsync(userId, newItems);
                 }
+
+                var first = bundle.AvatarItems.FirstOrDefault();
+
+                var badgeThumbnailPath = first == null ? null 
+                    : _avatarService.GetItemThumbnailRelativePath(first);
+                
                 var notification = new Notification
                 {
                     PointsEarned = 0,
 
                     Text = $"<span class=\"fas fa-shopping-bag\"></span> You've unlocked the <strong>{bundle.Name}</strong> avatar bundle!",
                     UserId = userId,
-                    BadgeFilename = bundle.AvatarItems.FirstOrDefault()?.Thumbnail,
+                    BadgeFilename = badgeThumbnailPath,
                     AvatarBundleId = bundleId
                 };
 
