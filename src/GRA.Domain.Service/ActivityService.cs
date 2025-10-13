@@ -1708,8 +1708,12 @@ namespace GRA.Domain.Service
             return assignedCode;
         }
 
-        private static string BuildCertificateRelativePath(int attachmentId, int? siteId = null) =>
-            $"site{siteId}/attachments/certificates/certificate{attachmentId}.pdf";
+        private string BuildCertificateRelativePath(int attachmentId, int? siteId = null)
+        {
+            int site = siteId ?? GetCurrentSiteId();
+            return $"site{site}/attachments/certificates/certificate{attachmentId}.pdf";
+
+        }
 
         private async Task<int> GetMaximumAllowedActivityAsync(int siteId)
         {

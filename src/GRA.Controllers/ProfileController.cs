@@ -1118,7 +1118,7 @@ namespace GRA.Controllers
                     }
                 }
                 if (item.AttachmentId.HasValue
-                    && !string.IsNullOrWhiteSpace(item.AttachmentFilename))
+                    || !string.IsNullOrWhiteSpace(item.AttachmentFilename))
                 {
                     string path;
                     if (item.AttachmentId.HasValue && item.AttachmentIsCertificate)
