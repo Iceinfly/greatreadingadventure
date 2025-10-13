@@ -27,6 +27,7 @@ namespace GRA.Controllers
         private const string SecretCodeMessage = "SecretCodeMessage";
 
         private readonly ActivityService _activityService;
+        private readonly AttachmentService _attachmentService;
         private readonly AuthenticationService _authenticationService;
         private readonly AvatarService _avatarService;
         private readonly BadgeService _badgeService;
@@ -49,6 +50,7 @@ namespace GRA.Controllers
         public ProfileController(ILogger<ProfileController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
+            AttachmentService attachmentService,
             AuthenticationService authenticationService,
             AvatarService avatarService,
             BadgeService badgeService,
@@ -65,6 +67,7 @@ namespace GRA.Controllers
             VendorCodeService vendorCodeService) : base(context)
         {
             ArgumentNullException.ThrowIfNull(activityService);
+            ArgumentNullException.ThrowIfNull(attachmentService);
             ArgumentNullException.ThrowIfNull(authenticationService);
             ArgumentNullException.ThrowIfNull(avatarService);
             ArgumentNullException.ThrowIfNull(badgeService);
@@ -82,6 +85,7 @@ namespace GRA.Controllers
             ArgumentNullException.ThrowIfNull(vendorCodeService);
 
             _activityService = activityService;
+            _attachmentService = attachmentService;
             _authenticationService = authenticationService;
             _avatarService = avatarService;
             _badgeService = badgeService;
@@ -591,10 +595,21 @@ namespace GRA.Controllers
 
             foreach (var userLog in userLogs.Data)
             {
+                string path;
+                if (userLog.AttachmentId.HasValue && userLog.AttachmentIsCertificate)
+                {
+                    path = _attachmentService.GetCertificateRelativePath(userLog.AttachmentId.Value);
+                }
+                else
+                {
+                    path = userLog.AttachmentFilename;
+                }
+
+
                 var item = new AttachmentItemViewModel
                 {
                     AttachmentFilename
-                        = _pathResolver.ResolveContentPath(userLog.AttachmentFilename),
+                        = _pathResolver.ResolveContentPath(path),
                     Description = userLog.Description,
                     EarnedOn = userLog.CreatedAt.ToShortDateString(),
                     ShowCertificate = userLog.AttachmentIsCertificate
@@ -1105,14 +1120,27 @@ namespace GRA.Controllers
                 if (item.AttachmentId.HasValue
                     && !string.IsNullOrWhiteSpace(item.AttachmentFilename))
                 {
+                    string path;
+                    if (item.AttachmentId.HasValue && item.AttachmentIsCertificate)
+                    {
+                        path = _attachmentService.GetCertificateRelativePath(item.AttachmentId.Value);
+                    }
+                    else
+                    {
+                        path = item.AttachmentFilename;
+                    }
+
                     itemModel.AttachmentId = item.AttachmentId.Value;
                     itemModel.ShowCertificate
                         = item.AttachmentIsCertificate && item.TriggerId.HasValue;
                     itemModel.AttachmentFilename
-                        = _pathResolver.ResolveContentPath(item.AttachmentFilename);
+                        = _pathResolver.ResolveContentPath(path);
+
+                    var lastSlash = path?.LastIndexOf('/') ?? -1;
                     itemModel.AttachmentDownload
-                        = item.AttachmentFilename[item.AttachmentFilename.LastIndexOf('/')..]
-                            .Trim('/');
+                        = lastSlash >= 0
+                        ? path.Substring(lastSlash + 1).Trim('/')
+                        : path;
                 }
                 itemModel.Description = description.ToString();
                 viewModel.Historys.Add(itemModel);

@@ -806,6 +806,7 @@ namespace GRA.Domain.Service
                 : null;
 
             // log the notification
+            var siteId = GetCurrentSiteId();
             await _notificationRepository.AddSaveAsync(authUserId, new Notification
             {
                 PointsEarned = pointsAwarded,
@@ -813,7 +814,8 @@ namespace GRA.Domain.Service
                 Text = trigger.AwardMessage,
                 BadgeId = trigger.AwardBadgeId,
                 BadgeFilename = badge.Filename,
-                AttachmentFilename = attachment?.FileName
+                AttachmentFilename = (attachment?.IsCertificate == true)
+                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
             });
 
             // find if the trigger is related to an event
@@ -1507,7 +1509,8 @@ namespace GRA.Domain.Service
                     Text = trigger.AwardMessage,
                     BadgeId = trigger.AwardBadgeId,
                     BadgeFilename = badge.Filename,
-                    AttachmentFilename = attachment?.FileName
+                    AttachmentFilename = (attachment?.IsCertificate == true)
+                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
                 });
 
                 // find if the trigger is related to an event
@@ -1704,6 +1707,9 @@ namespace GRA.Domain.Service
 
             return assignedCode;
         }
+
+        private static string BuildCertificateRelativePath(int attachmentId, int? siteId = null) =>
+            $"site{siteId}/attachments/certificates/certificate{attachmentId}.pdf";
 
         private async Task<int> GetMaximumAllowedActivityAsync(int siteId)
         {

@@ -66,6 +66,9 @@ namespace GRA.Domain.Service
             return null;
         }
 
+        private string BuildAttachmentRootPath(int siteId)
+            => Path.Combine($"site{siteId}", AttachmentPath);
+
         public async Task<Attachment> GetByIdAsync(int attachmentId)
         {
             return await _attachmentRepository.GetByIdAsync(attachmentId);
@@ -114,41 +117,14 @@ namespace GRA.Domain.Service
             return null;
         }
 
-        private string GetFilePath(string filename, string attachmentType)
+        public string GetCertificateRelativePath(int attachmentId, int? siteId = null)
         {
-            if (attachmentType != Certificates)
-            {
-                throw new GraException($"Unknown attachment type: {attachmentType}");
-            }
+            int site = siteId ?? GetCurrentSiteId();
 
-            string contentDir = _pathResolver.ResolveContentFilePath();
-            contentDir = Path.Combine(contentDir,
-                    $"site{GetCurrentSiteId()}",
-                    AttachmentPath,
-                    Certificates);
-
-            if (!Directory.Exists(contentDir))
-            {
-                Directory.CreateDirectory(contentDir);
-            }
-
-            return Path.Combine(contentDir, filename);
-        }
-
-        private string GetLinkPath(string filename, string attachmentType)
-        {
-            if (attachmentType != Certificates)
-            {
-                throw new GraException($"Unknown attachment type: {attachmentType}");
-            }
-
-            return string.Join("/", new[]
-            {
-                $"site{GetCurrentSiteId()}",
-                AttachmentPath,
+            return Path.Combine(
+                BuildAttachmentRootPath(site),
                 Certificates,
-                filename
-            });
+                $"certificate{attachmentId}.pdf");
         }
 
         private async Task RemoveAttachment(int attachmentId)
@@ -160,36 +136,46 @@ namespace GRA.Domain.Service
             }
 
             await _attachmentRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId),
-                attachment.Id);
-            File.Delete(GetFilePath($"certificate{attachmentId}.pdf", Certificates));
+              attachment.Id);
+
+            var path = GetCertificateRelativePath(attachmentId);
+            var full = _pathResolver.ResolveContentFilePath(path);
+
+            if (File.Exists(full))
+            {
+                File.Delete(full);
+            }
         }
 
         private async Task<string> WriteAttachmentFile(Attachment attachment,
-            string attachmentType,
-            byte[] file)
+              string attachmentType,
+              byte[] file)
         {
             if (attachmentType != Certificates)
             {
                 throw new GraException($"Unknown attachment type: {attachmentType}");
             }
-            string filename = $"certificate{attachment.Id}.pdf";
-            string fullFilePath = GetFilePath(filename, attachmentType);
+
+            var path = GetCertificateRelativePath(attachment.Id);
+
+            var full = _pathResolver.ResolveContentFilePath(path);
+            Directory.CreateDirectory(Path.GetDirectoryName(full)!);
 
             try
             {
-                _logger.LogDebug("Writing out attachment file {AttachmentFile}", fullFilePath);
-                await File.WriteAllBytesAsync(fullFilePath, file);
+                _logger.LogDebug("Writing out attachment file {AttachmentFile}", full);
+                await File.WriteAllBytesAsync(full, file);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex,
-                    "Unknown image format exception on file {Filename}: {ErrorMessage}",
-                    attachment.FileName,
-                    ex.Message);
-                throw new GraException("Unknown image type, please upload a PDF document.",
-                    ex);
+                  "Unknown image format exception on file {Filename}: {ErrorMessage}",
+                  attachment.FileName,
+                  ex.Message);
+                throw new GraException("Unknown image type, please upload a PDF document.", ex);
             }
-            return GetLinkPath(filename, attachmentType);
+
+            return path;
         }
     }
 }
