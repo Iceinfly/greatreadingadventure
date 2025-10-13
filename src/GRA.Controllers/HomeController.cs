@@ -304,7 +304,8 @@ namespace GRA.Controllers
                     var avatarElements = userAvatar;
                     foreach (var element in avatarElements)
                     {
-                        element.Filename = _pathResolver.ResolveContentPath(element.Filename);
+                        var path = await _avatarService.GetElementRelativePathAsync(element);
+                        var url = _pathResolver.ResolvePrivatePath(path);
                     }
                     viewModel.AvatarElements = avatarElements;
                 }

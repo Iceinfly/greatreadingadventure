@@ -13,6 +13,7 @@ using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Asn1.Mozilla;
 
 namespace GRA.Domain.Service
 {
@@ -118,6 +119,10 @@ namespace GRA.Domain.Service
 
         private string BuildItemRootPath(int siteId, int layerId, int itemId) =>
             Path.Combine($"site{siteId}", "avatars", $"layer{layerId}", $"item{itemId}");
+
+        private string BuildLayerRootPath(int siteId, int layerId) =>
+            Path.Combine($"site{siteId}", "avatars", $"layer{layerId}");
+
         public async Task DeleteItemAsync(int id)
         {
             VerifyManagementPermission();
@@ -195,6 +200,32 @@ namespace GRA.Domain.Service
             return await _avatarColorRepository.GetByLayerAsync(layerId);
         }
 
+        public async Task<string> GetElementRelativePathAsync(AvatarElement element, int? siteId = null)
+        {
+            int site = siteId ?? GetCurrentSiteId();
+
+            int layerId;
+            if (element.AvatarItem != null)
+            {
+                layerId = element.AvatarItem.AvatarLayerId;
+            }
+            else
+            {
+                var item = await _avatarItemRepository.GetByIdAsync(element.AvatarItemId);
+                layerId = item.AvatarLayerId;
+            }
+
+            var fileName = "item";
+            if (element.AvatarColorId.HasValue)
+            {
+                fileName += $"_{element.AvatarColorId.Value}";
+            }
+            fileName += ".png";
+
+            return Path.Combine(
+                BuildItemRootPath(site, layerId, element.AvatarItemId), fileName);
+        }
+
         public async Task<AvatarItem> GetItemByLayerPositionSortOrderAsync(int layerPosition,
             int sortOrder)
         {
@@ -224,6 +255,22 @@ namespace GRA.Domain.Service
         {
             VerifyManagementPermission();
             return await _avatarItemRepository.GetLayerAvailableItemCountAsync(layerId);
+        }
+
+        public string GetLayerItemRelativePath(int layerId, int itemId, int? colorId = null, int? siteId = null)
+        {
+            int site = siteId ?? GetCurrentSiteId();
+
+            var fileName = "item";
+            if (colorId.HasValue)
+            {
+                fileName += $"_{colorId.Value}";
+            }
+            fileName += ".png";
+
+            return Path.Combine(
+                BuildItemRootPath(site, layerId, itemId),
+                fileName);
         }
 
         public async Task<IEnumerable<AvatarLayer>> GetLayersAsync()
@@ -339,10 +386,11 @@ namespace GRA.Domain.Service
                             _.AvatarItem.AvatarLayerId == layer.Id);
                         if (layerSelection != null)
                         {
+                            var path = await GetElementRelativePathAsync(layerSelection);
                             layer.SelectedItem = layerSelection.AvatarItemId;
                             layer.SelectedColor = layerSelection.AvatarColorId;
                             layer.FilePath = _pathResolver
-                                .ResolveContentPath(layerSelection.Filename);
+                                .ResolveContentPath(path);
                         }
                         else if (layer.AvatarColors.Count > 0)
                         {
@@ -375,16 +423,12 @@ namespace GRA.Domain.Service
 
                         if (layer.SelectedItem.HasValue)
                         {
-                            var fileName = "item";
-                            if (layer.SelectedColor.HasValue)
-                            {
-                                fileName += $"_{layer.SelectedColor}";
-                            }
-                            fileName += ".png";
-                            layer.FilePath = Path.Combine(filePath,
-                                $"layer{layer.Id}",
-                                $"item{layer.SelectedItem}",
-                                fileName);
+                            var layerPath =
+                                GetLayerItemRelativePath(
+                                    layer.Id,
+                                    layer.SelectedItem.Value,
+                                    layer.SelectedColor);
+                            layer.FilePath = _pathResolver.ResolveContentPath(layerPath);
                         }
                     }
                 }
@@ -625,9 +669,10 @@ namespace GRA.Domain.Service
                                 var element = new AvatarElement
                                 {
                                     AvatarItemId = item.Id,
-                                    AvatarColorId = color.Id,
-                                    Filename = Path.Combine(itemRoot, $"item_{color.Id}.png")
+                                    AvatarColorId = color.Id
                                 };
+                                element.Filename =
+                                    await GetElementRelativePathAsync(element, siteId);
                                 await _avatarElementRepository.AddAsync(requestingUser, element);
                                 File.Copy(
                                     Path.Combine(itemAssetPath, $"{color.Color}.png"),
@@ -640,8 +685,8 @@ namespace GRA.Domain.Service
                             var element = new AvatarElement
                             {
                                 AvatarItemId = item.Id,
-                                Filename = Path.Combine(itemRoot, "item.png")
                             };
+                            element.Filename = await GetElementRelativePathAsync(element, siteId);
                             await _avatarElementRepository.AddAsync(requestingUser, element);
                             File.Copy(Path.Combine(itemAssetPath, "item.png"),
                                 Path.Combine(itemPath, "item.png"));
@@ -750,7 +795,7 @@ namespace GRA.Domain.Service
                     .Append(Convert.ToInt32(sw.Elapsed.TotalSeconds))
                     .Append(" seconds");
 
-                if(deleteIssues)
+                if (deleteIssues)
                 {
                     resultMessage.Append(" - could not delete all uploaded files");
                 }

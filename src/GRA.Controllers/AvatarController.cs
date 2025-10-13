@@ -239,7 +239,8 @@ namespace GRA.Controllers
                             var avatarPoint = new Point(660, 60);
                             foreach (var element in userAvatar)
                             {
-                                var file = _pathResolver.ResolveContentFilePath(element.Filename);
+                                var elementPath = await _avatarService.GetElementRelativePathAsync(element);
+                                var file = _pathResolver.ResolveContentFilePath(elementPath);
                                 image.Mutate(_ => _.DrawImage(Image.Load(file), avatarPoint, 1));
                             }
 
