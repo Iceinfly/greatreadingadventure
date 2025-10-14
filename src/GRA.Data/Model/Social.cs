@@ -16,6 +16,9 @@ namespace GRA.Data.Model
 
         [Required]
         [MaxLength(255)]
+        public string ImageFilename { get; set; }
+
+        [MaxLength(255)]
         public string ImageLink { get; set; }
 
         public int ImageWidth { get; set; }

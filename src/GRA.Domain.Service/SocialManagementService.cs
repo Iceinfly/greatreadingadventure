@@ -84,7 +84,6 @@ namespace GRA.Domain.Service
 
             await ClearSocialCache(socialHeader.Id, social.LanguageId);
         }
-
         public async Task<int?> DeleteSocial(int socialHeaderId, int languageId)
         {
             VerifyManagementPermission();
@@ -92,17 +91,36 @@ namespace GRA.Domain.Service
             var socials = await _socialRepository.GetByHeaderIdsAsync(new[] { socialHeaderId });
 
             var toDelete = socials
-                .Single(_ => _.SocialHeaderId == socialHeaderId && _.LanguageId == languageId);
+              .Single(_ => _.SocialHeaderId == socialHeaderId && _.LanguageId == languageId);
 
-            try
+            if (!string.IsNullOrWhiteSpace(toDelete.ImageFilename))
             {
-                var filename = toDelete.ImageLink[toDelete.ImageLink.LastIndexOf('/')..];
-                File.Delete(GetFilePath(filename));
+                try
+                {
+                    File.Delete(GetFilePath(toDelete.ImageFilename));
+                }
+                catch (IOException ioex)
+                {
+                    _logger.LogError("Problem deleting social file: {ErrorMessage}", ioex.Message);
+                }
             }
-            catch (IOException ioex)
+            else if (!string.IsNullOrWhiteSpace(toDelete.ImageLink))
             {
-                _logger.LogError("Problem deleting social file: {ErrorMessage}",
-                    ioex.Message);
+                try
+                {
+                    var legacyFilename = toDelete.ImageLink.Contains('/')
+                      ? toDelete.ImageLink[(toDelete.ImageLink.LastIndexOf('/') + 1)..]
+                      : toDelete.ImageLink;
+
+                    if (!string.IsNullOrWhiteSpace(legacyFilename))
+                    {
+                        File.Delete(GetFilePath(legacyFilename));
+                    }
+                }
+                catch (IOException ioex)
+                {
+                    _logger.LogError("Problem deleting legacy social file: {ErrorMessage}", ioex.Message);
+                }
             }
 
             await _socialRepository.RemoveSaveAsync(socialHeaderId, languageId);
@@ -122,7 +140,6 @@ namespace GRA.Domain.Service
 
             return returnValue;
         }
-
         public async Task<SocialHeader> GetHeaderAndSocialAsync(int headerId, int languageId)
         {
             VerifyManagementPermission();
@@ -171,7 +188,13 @@ namespace GRA.Domain.Service
             };
         }
 
-        public async Task ReplaceImageAsync(int socialHeaderId,
+        public string GetPublicImagePath(int siteId, string imageFilename)
+        {
+            return _pathResolver.ResolveContentPath($"site{siteId}/social/{imageFilename}");
+        }
+
+        public async Task ReplaceImageAsync(
+            int socialHeaderId,
             int languageId,
             string filename,
             byte[] imageBytes)
@@ -186,8 +209,23 @@ namespace GRA.Domain.Service
                 return;
             }
 
-            (social.ImageLink, social.ImageWidth, social.ImageHeight)
-                = HandleSocialImage(filename, imageBytes);
+            if (!string.IsNullOrWhiteSpace(social.ImageFilename))
+            {
+                try
+                {
+                    File.Delete(GetFilePath(social.ImageFilename));
+                }
+                catch (IOException ioex)
+                {
+                    _logger.LogError("Problem deleting old social file: {ErrorMessage}", ioex.Message);
+                }
+            }
+            var (savedFilename, width, height) = HandleSocialImage(filename, imageBytes);
+            social.ImageFilename = savedFilename;
+            social.ImageWidth = width;
+            social.ImageHeight = height;
+
+            social.ImageLink = null;
 
             await _socialRepository.UpdateSaveAsync(social);
 
@@ -252,7 +290,7 @@ namespace GRA.Domain.Service
                 .ResolveContentPath($"site{GetCurrentSiteId()}/{SocialPath}/{filename}");
         }
 
-        private (string ImageLink, int ImageWidth, int ImageHeight) HandleSocialImage(
+        private (string filename, int ImageWidth, int ImageHeight) HandleSocialImage(
             string filename,
             byte[] imageBytes)
         {
@@ -270,7 +308,7 @@ namespace GRA.Domain.Service
 
             using var image = SixLabors.ImageSharp.Image.Load(imageBytes);
 
-            return (GetLinkPath(filename), image.Width, image.Height);
+            return (filename, image.Width, image.Height);
         }
     }
 }

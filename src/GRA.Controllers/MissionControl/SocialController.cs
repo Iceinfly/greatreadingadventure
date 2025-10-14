@@ -325,7 +325,6 @@ namespace GRA.Controllers.MissionControl
                 Description = social?.Description,
                 HeaderId = socialHeaderId,
                 ImageAlt = social?.ImageAlt,
-                ImageLink = social?.ImageLink,
                 LanguageId = languageId,
                 LanguageName = language.Description,
                 Name = socialHeader.Name,
@@ -335,8 +334,11 @@ namespace GRA.Controllers.MissionControl
                 TwitterUsername = social?.TwitterUsername
             };
 
-            if (social?.ImageLink != null
-                && social.ImageLink.Contains('/', StringComparison.OrdinalIgnoreCase))
+            if(!string.IsNullOrEmpty(social?.ImageFilename))
+            {
+                viewmodel.Filename = social?.ImageFilename;
+            }
+            else if (!string.IsNullOrWhiteSpace(social?.ImageLink))
             {
                 viewmodel.Filename = social.ImageLink[social.ImageLink.LastIndexOf('/')..];
             }

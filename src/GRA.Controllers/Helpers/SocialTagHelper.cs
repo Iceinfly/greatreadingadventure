@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
+using GRA.Abstract;
 using GRA.Domain.Model;
 using GRA.Domain.Service;
 using GRA.Domain.Service.Abstract;
@@ -21,11 +22,13 @@ namespace GRA.Controllers.Helpers
         private readonly IOptions<RequestLocalizationOptions> _localizationOptions;
         private readonly SiteLookupService _siteLookupService;
         private readonly IUserContextProvider _userContextProvider;
+        private readonly IPathResolver _pathResolver;
 
         public SocialTagHelper(
             IOptions<RequestLocalizationOptions> localizationOptions,
             SiteLookupService siteLookupService,
-            IUserContextProvider userContextProvider)
+            IUserContextProvider userContextProvider,
+            IPathResolver pathResolver)
         {
             _localizationOptions = localizationOptions
                 ?? throw new ArgumentNullException(nameof(localizationOptions));
@@ -33,6 +36,8 @@ namespace GRA.Controllers.Helpers
                 ?? throw new ArgumentNullException(nameof(siteLookupService));
             _userContextProvider = userContextProvider
                 ?? throw new ArgumentNullException(nameof(userContextProvider));
+            _pathResolver = pathResolver
+                ?? throw new ArgumentNullException(nameof(pathResolver));
         }
 
         [HtmlAttributeName("data")]
@@ -134,9 +139,9 @@ namespace GRA.Controllers.Helpers
         }
 
         private void AddFacebookTags(TagHelperOutput output,
-            Site site,
-            string title,
-            string description)
+        Site site,
+        string title,
+        string description)
         {
             var currentCulture = _userContextProvider.GetCurrentCulture();
             var ogLink = GetSiteLink(site, currentCulture);
@@ -158,8 +163,9 @@ namespace GRA.Controllers.Helpers
 
             if (currentCulture != null)
             {
-                output.Content.AppendHtml(MetaProperty("og:locale",
-                    currentCulture.Name.Replace('-', '_')));
+                output.Content.AppendHtml(MetaProperty(
+                  "og:locale",
+                  currentCulture.Name.Replace('-', '_')));
                 output.Content.AppendHtml(Environment.NewLine);
 
                 if (_localizationOptions != null)
@@ -168,24 +174,47 @@ namespace GRA.Controllers.Helpers
                     {
                         if (l10n.Name != currentCulture.Name)
                         {
-                            output.Content.AppendHtml(MetaProperty("og:locale:alternate",
-                                l10n.Name.Replace('-', '_')));
+                            output.Content.AppendHtml(MetaProperty(
+                              "og:locale:alternate",
+                              l10n.Name.Replace('-', '_')));
                             output.Content.AppendHtml(Environment.NewLine);
                         }
                     }
                 }
             }
 
-            if (!string.IsNullOrEmpty(Data?.ImageLink) && !string.IsNullOrEmpty(Data?.ImageAlt))
+            string cardPath = null;
+
+            if (!string.IsNullOrWhiteSpace(Data?.ImageFilename))
             {
-                var link = GetSiteLink(site, null);
-                var cardLink = link.EndsWith('/')
-                    ? link + Data.ImageLink.TrimStart('/')
-                    : link + '/' + Data.ImageLink.TrimStart('/');
+                cardPath = _pathResolver
+              .ResolveContentPath($"site{site.Id}/social/{Data.ImageFilename}");
+            }
+            else if (!string.IsNullOrWhiteSpace(Data?.ImageLink))
+            {
+                cardPath = Data.ImageLink;
+            }
+
+            if (!string.IsNullOrWhiteSpace(cardPath) &&
+              !string.IsNullOrWhiteSpace(Data?.ImageAlt))
+            {
+                string cardLink;
+                if (cardPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                {
+                    cardLink = cardPath;
+                }
+                else
+                {
+                    var siteBase = GetSiteLink(site, null);
+                    cardLink = siteBase.EndsWith("/", StringComparison.Ordinal)
+                      ? siteBase + cardPath.TrimStart('/')
+                      : siteBase + "/" + cardPath.TrimStart('/');
+                }
 
                 output.Content.AppendHtml(MetaProperty("og:image", cardLink));
                 output.Content.AppendHtml(Environment.NewLine);
-                if (cardLink.StartsWith(SecureScheme))
+
+                if (cardLink.StartsWith(SecureScheme, StringComparison.OrdinalIgnoreCase))
                 {
                     output.Content.AppendHtml(MetaProperty("og:image:secure_url", cardLink));
                     output.Content.AppendHtml(Environment.NewLine);
@@ -194,11 +223,13 @@ namespace GRA.Controllers.Helpers
                 output.Content.AppendHtml(Environment.NewLine);
                 if (Data.ImageWidth != default && Data.ImageHeight != default)
                 {
-                    output.Content.AppendHtml(MetaProperty("og:image:width",
-                        Data.ImageWidth.ToString(CultureInfo.InvariantCulture)));
+                    output.Content.AppendHtml(MetaProperty(
+                      "og:image:width",
+                      Data.ImageWidth.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
-                    output.Content.AppendHtml(MetaProperty("og:image:height",
-                        Data.ImageHeight.ToString(CultureInfo.InvariantCulture)));
+                    output.Content.AppendHtml(MetaProperty(
+                      "og:image:height",
+                      Data.ImageHeight.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
                 }
             }

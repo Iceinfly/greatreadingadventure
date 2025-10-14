@@ -113,7 +113,8 @@ namespace GRA.Data.Repository
             entity.Description = social.Description;
             entity.ImageAlt = social.ImageAlt;
             entity.ImageHeight = social.ImageHeight;
-            entity.ImageLink = social.ImageLink;
+            entity.ImageFilename = social.ImageFilename;
+            entity.ImageLink = null;
             entity.ImageWidth = social.ImageWidth;
             entity.Title = social.Title;
             entity.TwitterUsername = social.TwitterUsername;
