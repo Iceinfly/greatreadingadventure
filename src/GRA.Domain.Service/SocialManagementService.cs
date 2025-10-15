@@ -75,8 +75,13 @@ namespace GRA.Domain.Service
                 return;
             }
 
-            (social.ImageLink, social.ImageWidth, social.ImageHeight)
+            var (savedFilename, width, height)
                 = HandleSocialImage(filename, imageBytes);
+
+            social.ImageFilename = savedFilename;
+            social.ImageWidth = width;
+            social.ImageHeight = height;
+            social.ImageLink = null;
 
             await _socialRepository.AddSaveAsync(social);
 
