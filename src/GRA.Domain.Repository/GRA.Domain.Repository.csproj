@@ -17,15 +17,11 @@
     <RepositoryType>Git</RepositoryType>
     <RepositoryUrl>https://github.com/mcld/greatreadingadventure/</RepositoryUrl>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Version>4.5.1</Version>
+    <Version>4.6.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GRA.Domain.Model\GRA.Domain.Model.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.6.1" />
   </ItemGroup>
 
 </Project>
