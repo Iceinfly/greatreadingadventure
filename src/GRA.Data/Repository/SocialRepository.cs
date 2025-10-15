@@ -53,6 +53,7 @@ namespace GRA.Data.Repository
 
         public async Task<Social> AddSaveInternalAsync(Social social)
         {
+            NormalizeStorage(social);
             var dbEntity = _mapper.Map<Social, Model.Social>(social);
             var added = await DbSet.AddAsync(dbEntity);
             await _context.SaveChangesAsync();
@@ -76,6 +77,34 @@ namespace GRA.Data.Repository
                 .ProjectTo<Social>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync();
         }
+
+        private static void NormalizeStorage(Social social)
+        {
+            if (social == null) 
+            {
+                return;
+            }
+
+            social.Title = social.Title?.Trim();
+            social.Description = social.Description?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(social.ImageFilename))
+            {
+                social.ImageFilename = System.IO.Path.GetFileName(social.ImageFilename.Trim());
+            }
+
+            social.ImageLink = null;
+
+            if (social.ImageWidth < 0) 
+            {
+                social.ImageWidth = 0;
+            }
+            if (social.ImageHeight < 0)
+            { 
+                social.ImageHeight = 0; 
+            }
+        }
+
 
         public async Task RemoveSaveAsync(int headerId, int languageId)
         {
@@ -102,6 +131,7 @@ namespace GRA.Data.Repository
 
         private async Task<Social> UpdateSaveInternalAsync(Social social)
         {
+            NormalizeStorage(social);
             var entity = await DbSet
                 .Where(_ => _.SocialHeaderId == social.SocialHeaderId
                     && _.LanguageId == social.LanguageId)
