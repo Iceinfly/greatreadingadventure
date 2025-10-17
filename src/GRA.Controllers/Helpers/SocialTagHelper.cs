@@ -94,7 +94,7 @@ namespace GRA.Controllers.Helpers
 
             AddDublinCoreTags(output, site);
 
-            if (!string.IsNullOrEmpty(Data?.ImageLink))
+            if (!string.IsNullOrEmpty(Data?.ImageLink) || !string.IsNullOrEmpty(Data?.ImageFilename))
             {
                 AddFacebookTags(output, site, title, description);
                 AddTwitterTags(output);
