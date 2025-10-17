@@ -48,7 +48,7 @@ namespace GRA.Domain.Service
 
             badge.SiteId = GetCurrentSiteId();
             var result = await _badgeRepository.AddSaveAsync(GetClaimId(ClaimType.UserId), badge);
-            result.Filename = await WriteBadgeFileAsync(result, imageFile, imageType: null);
+            await WriteBadgeFileAsync(result, imageFile, imageType: null);
             result.AltText = badge.AltText?.Trim();
             return await _badgeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), result);
         }
@@ -57,6 +57,10 @@ namespace GRA.Domain.Service
         {
             return await _badgeRepository.GetBadgeFileNameAsync(id);
         }
+
+        public static string GetBadgePath(int siteId, int badgeId) =>
+            $"site{siteId}/badges/badge{badgeId}.png";
+
 
         public async Task<Badge> GetByIdAsync(int badgeId)
         {
@@ -111,7 +115,7 @@ namespace GRA.Domain.Service
                     }
                 }
 
-                badge.Filename = await WriteBadgeFileAsync(existingBadge, imageFile, imageType);
+                await WriteBadgeFileAsync(existingBadge, imageFile, imageType);
             }
             badge.AltText = badge.AltText?.Trim();
             return await _badgeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), badge);
@@ -162,34 +166,32 @@ namespace GRA.Domain.Service
             "CA1308:Normalize strings to uppercase",
             Justification = "Normalize filenames to lowercase")]
         private async Task<string> WriteBadgeFileAsync(Badge badge,
-            byte[] imageFile,
-            ImageType? imageType)
+  byte[] imageFile,
+  ImageType? imageType)
         {
-            string extension = imageType.HasValue
-                ? "." + imageType.ToString().ToLowerInvariant()
-                : Path.GetExtension(badge.Filename).ToLowerInvariant();
-
+            const string extension = ".png";
             string filename = $"badge{badge.Id}{extension}";
             string fullFilePath = GetFilePath(filename);
 
             try
             {
                 using var image = Image.Load(imageFile);
-                var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(
-                    GetCurrentSiteId(),
-                    SiteSettingKey.Badges.MaxDimension);
 
-                int maxDimension = IsSet
-                    ? SetValue
-                    : DefaultMaxDimension;
+                var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(
+                  GetCurrentSiteId(),
+                  SiteSettingKey.Badges.MaxDimension);
+
+                int maxDimension = IsSet ? SetValue : DefaultMaxDimension;
 
                 if (image.Width > maxDimension || image.Height > maxDimension)
                 {
                     _logger.LogInformation("Resizing badge file {BadgeFile}", fullFilePath);
                     var sw = Stopwatch.StartNew();
-                    image.Mutate(_ => _.Resize(maxDimension,
-                        maxDimension,
-                        KnownResamplers.Lanczos3));
+
+                    image.Mutate(_ => _.Resize(
+                      maxDimension,
+                      maxDimension,
+                      KnownResamplers.Lanczos3));
 
                     if (image.Metadata != null)
                     {
@@ -197,43 +199,44 @@ namespace GRA.Domain.Service
                         image.Metadata.IccProfile = null;
                         image.Metadata.IptcProfile = null;
                     }
-                    switch (extension)
-                    {
-                        case "jpg":
-                        case "jpeg":
-                            await image.SaveAsJpegAsync(fullFilePath, new JpegEncoder
-                            {
-                                Quality = 77
-                            });
-                            break;
 
-                        default:
-                            await image.SaveAsPngAsync(fullFilePath, new PngEncoder
-                            {
-                                CompressionLevel = PngCompressionLevel.BestCompression,
-                                SkipMetadata = true
-                            });
-                            break;
-                    }
+                    await image.SaveAsPngAsync(fullFilePath, new PngEncoder
+                    {
+                        CompressionLevel = PngCompressionLevel.BestCompression,
+                        SkipMetadata = true
+                    });
                     _logger.LogInformation("Image resize and save of {Filename} took {Elapsed} ms",
-                        filename,
-                        sw.ElapsedMilliseconds);
+                      filename,
+                      sw.ElapsedMilliseconds);
                 }
                 else
                 {
                     _logger.LogDebug("Writing out badge file {BadgeFile}", fullFilePath);
-                    File.WriteAllBytes(fullFilePath, imageFile);
+
+                    using var image2 = Image.Load(imageFile);
+                    if (image2.Metadata != null)
+                    {
+                        image2.Metadata.ExifProfile = null;
+                        image2.Metadata.IccProfile = null;
+                        image2.Metadata.IptcProfile = null;
+                    }
+                    await image2.SaveAsPngAsync(fullFilePath, new PngEncoder
+                    {
+                        CompressionLevel = PngCompressionLevel.BestCompression,
+                        SkipMetadata = true
+                    });
                 }
             }
             catch (UnknownImageFormatException uifex)
             {
                 _logger.LogError(uifex,
-                    "Unknown image format exception on file {Filename}: {ErrorMessage}",
-                    badge.Filename,
-                    uifex.Message);
-                throw new GraException("Unknown image type, please upload a JPEG or PNG image.",
+                  "Unknown image format exception on file {Filename}: {ErrorMessage}",
+                  filename,
+                  uifex.Message);
+                throw new GraException("Unknown image type, please upload a JPEG or PNG image.", 
                     uifex);
             }
+
             return GetUrlPath(filename);
         }
     }
