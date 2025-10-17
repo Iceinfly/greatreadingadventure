@@ -100,7 +100,7 @@ namespace GRA.Controllers.MissionControl
                 model.Bundle.AvatarItems = await _avatarService.GetItemsByIdsAsync(itemList);
                 foreach (var item in model.Bundle.AvatarItems)
                 {
-                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    var thumbnailPath = _avatarService.GetItemThumbnailPath(item);
                     item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
@@ -138,7 +138,7 @@ namespace GRA.Controllers.MissionControl
             }
             foreach (var item in bundle.AvatarItems)
             {
-                var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                var thumbnailPath = _avatarService.GetItemThumbnailPath(item);
                 item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
             }
 
@@ -192,7 +192,7 @@ namespace GRA.Controllers.MissionControl
                 model.Bundle.AvatarItems = await _avatarService.GetItemsByIdsAsync(itemList);
                 foreach (var item in model.Bundle.AvatarItems)
                 {
-                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    var thumbnailPath = _avatarService.GetItemThumbnailPath(item);
                     item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
@@ -309,7 +309,7 @@ namespace GRA.Controllers.MissionControl
             {
                 if (!string.IsNullOrWhiteSpace(item.Thumbnail))
                 {
-                    var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                    var thumbnailPath = _avatarService.GetItemThumbnailPath(item);
                     item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
                 }
             }
@@ -420,7 +420,7 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var item in itemList.Data)
             {
-                var thumbnailPath = _avatarService.GetItemThumbnailRelativePath(item);
+                var thumbnailPath = _avatarService.GetItemThumbnailPath(item);
                 item.Thumbnail = _pathResolver.ResolveContentPath(thumbnailPath);
             }
 

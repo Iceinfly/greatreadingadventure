@@ -200,7 +200,7 @@ namespace GRA.Domain.Service
             return await _avatarColorRepository.GetByLayerAsync(layerId);
         }
 
-        public async Task<string> GetElementRelativePathAsync(AvatarElement element, int? siteId = null)
+        public async Task<string> GetElementPathAsync(AvatarElement element, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
 
@@ -245,7 +245,7 @@ namespace GRA.Domain.Service
             return await _avatarItemRepository.GetByLayerAsync(layerId);
         }
 
-        public string GetItemThumbnailRelativePath(Model.AvatarItem item, int? siteId = null)
+        public string GetItemThumbnailPath(Model.AvatarItem item, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
             return Path.Combine(BuildItemRootPath(site, item.AvatarLayerId, item.Id), "thumbnail.jpg");
@@ -257,7 +257,7 @@ namespace GRA.Domain.Service
             return await _avatarItemRepository.GetLayerAvailableItemCountAsync(layerId);
         }
 
-        public string GetLayerItemRelativePath(int layerId, int itemId, int? colorId = null, int? siteId = null)
+        public string GetLayerItemPath(int layerId, int itemId, int? colorId = null, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
 
@@ -386,7 +386,7 @@ namespace GRA.Domain.Service
                             _.AvatarItem.AvatarLayerId == layer.Id);
                         if (layerSelection != null)
                         {
-                            var path = await GetElementRelativePathAsync(layerSelection);
+                            var path = await GetElementPathAsync(layerSelection);
                             layer.SelectedItem = layerSelection.AvatarItemId;
                             layer.SelectedColor = layerSelection.AvatarColorId;
                             layer.FilePath = _pathResolver
@@ -424,7 +424,7 @@ namespace GRA.Domain.Service
                         if (layer.SelectedItem.HasValue)
                         {
                             var layerPath =
-                                GetLayerItemRelativePath(
+                                GetLayerItemPath(
                                     layer.Id,
                                     layer.SelectedItem.Value,
                                     layer.SelectedColor);
@@ -672,7 +672,7 @@ namespace GRA.Domain.Service
                                     AvatarColorId = color.Id
                                 };
                                 element.Filename =
-                                    await GetElementRelativePathAsync(element, siteId);
+                                    await GetElementPathAsync(element, siteId);
                                 await _avatarElementRepository.AddAsync(requestingUser, element);
                                 File.Copy(
                                     Path.Combine(itemAssetPath, $"{color.Color}.png"),
@@ -686,7 +686,7 @@ namespace GRA.Domain.Service
                             {
                                 AvatarItemId = item.Id,
                             };
-                            element.Filename = await GetElementRelativePathAsync(element, siteId);
+                            element.Filename = await GetElementPathAsync(element, siteId);
                             await _avatarElementRepository.AddAsync(requestingUser, element);
                             File.Copy(Path.Combine(itemAssetPath, "item.png"),
                                 Path.Combine(itemPath, "item.png"));

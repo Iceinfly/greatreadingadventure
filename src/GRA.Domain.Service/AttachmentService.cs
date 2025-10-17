@@ -117,7 +117,7 @@ namespace GRA.Domain.Service
             return null;
         }
 
-        public string GetCertificateRelativePath(int attachmentId, int? siteId = null)
+        public string GetCertificatePath(int attachmentId, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
 
@@ -138,7 +138,7 @@ namespace GRA.Domain.Service
             await _attachmentRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId),
               attachment.Id);
 
-            var path = GetCertificateRelativePath(attachmentId);
+            var path = GetCertificatePath(attachmentId);
             var full = _pathResolver.ResolveContentFilePath(path);
 
             if (File.Exists(full))
@@ -156,7 +156,7 @@ namespace GRA.Domain.Service
                 throw new GraException($"Unknown attachment type: {attachmentType}");
             }
 
-            var path = GetCertificateRelativePath(attachment.Id);
+            var path = GetCertificatePath(attachment.Id);
 
             var full = _pathResolver.ResolveContentFilePath(path);
             Directory.CreateDirectory(Path.GetDirectoryName(full)!);

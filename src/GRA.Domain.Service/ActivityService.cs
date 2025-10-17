@@ -815,7 +815,7 @@ namespace GRA.Domain.Service
                 BadgeId = trigger.AwardBadgeId,
                 BadgeFilename = badge.Filename,
                 AttachmentFilename = (attachment?.IsCertificate == true)
-                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
+                    ? BuildCertificatePath(attachment!.Id, siteId) : null
             });
 
             // find if the trigger is related to an event
@@ -1510,7 +1510,7 @@ namespace GRA.Domain.Service
                     BadgeId = trigger.AwardBadgeId,
                     BadgeFilename = badge.Filename,
                     AttachmentFilename = (attachment?.IsCertificate == true)
-                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
+                    ? BuildCertificatePath(attachment!.Id, siteId) : null
                 });
 
                 // find if the trigger is related to an event
@@ -1582,7 +1582,7 @@ namespace GRA.Domain.Service
                 var first = bundle.AvatarItems.FirstOrDefault();
 
                 var badgeThumbnailPath = first == null ? null 
-                    : _avatarService.GetItemThumbnailRelativePath(first);
+                    : _avatarService.GetItemThumbnailPath(first);
                 
                 var notification = new Notification
                 {
@@ -1708,7 +1708,7 @@ namespace GRA.Domain.Service
             return assignedCode;
         }
 
-        private string BuildCertificateRelativePath(int attachmentId, int? siteId = null)
+        private string BuildCertificatePath(int attachmentId, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
             return $"site{site}/attachments/certificates/certificate{attachmentId}.pdf";

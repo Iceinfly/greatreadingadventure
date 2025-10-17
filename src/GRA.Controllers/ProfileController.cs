@@ -598,7 +598,7 @@ namespace GRA.Controllers
                 string path;
                 if (userLog.AttachmentId.HasValue && userLog.AttachmentIsCertificate)
                 {
-                    path = _attachmentService.GetCertificateRelativePath(userLog.AttachmentId.Value);
+                    path = _attachmentService.GetCertificatePath(userLog.AttachmentId.Value);
                 }
                 else
                 {
@@ -1099,7 +1099,7 @@ namespace GRA.Controllers
                             itemModel.BadgeFilename = _pathResolver
                                 .ResolveContentFilePath(
                                 _avatarService
-                                .GetItemThumbnailRelativePath(first)
+                                .GetItemThumbnailPath(first)
                                 );
                         }
                         if (bundle.AvatarItems.Count > 1)
@@ -1123,7 +1123,7 @@ namespace GRA.Controllers
                     string path;
                     if (item.AttachmentId.HasValue && item.AttachmentIsCertificate)
                     {
-                        path = _attachmentService.GetCertificateRelativePath(item.AttachmentId.Value);
+                        path = _attachmentService.GetCertificatePath(item.AttachmentId.Value);
                     }
                     else
                     {
