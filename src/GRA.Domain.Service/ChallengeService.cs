@@ -20,6 +20,7 @@ namespace GRA.Domain.Service
         private const string TaskFilesPath = "tasks";
 
         private readonly IBadgeRepository _badgeRepository;
+        private readonly BadgeService _badgeService;
         private readonly IBranchRepository _branchRepository;
         private readonly IGraCache _cache;
         private readonly ICategoryRepository _categoryRepository;
@@ -38,6 +39,7 @@ namespace GRA.Domain.Service
             IGraCache cache,
             IUserContextProvider userContextProvider,
             IBadgeRepository badgeRepository,
+            BadgeService badgeService,
             IBranchRepository branchRepository,
             ICategoryRepository categoryRepository,
             IChallengeGroupRepository challengeGroupRepository,
@@ -53,6 +55,7 @@ namespace GRA.Domain.Service
             : base(logger, dateTimeProvider, userContextProvider)
         {
             ArgumentNullException.ThrowIfNull(badgeRepository);
+            ArgumentNullException.ThrowIfNull(badgeService);
             ArgumentNullException.ThrowIfNull(branchRepository);
             ArgumentNullException.ThrowIfNull(cache);
             ArgumentNullException.ThrowIfNull(categoryRepository);
@@ -67,6 +70,7 @@ namespace GRA.Domain.Service
             ArgumentNullException.ThrowIfNull(triggerRepository);
 
             _badgeRepository = badgeRepository;
+            _badgeService = badgeService;
             _branchRepository = branchRepository;
             _cache = cache;
             _categoryRepository = categoryRepository;
@@ -713,10 +717,12 @@ namespace GRA.Domain.Service
         {
             if (challenge.BadgeId != null)
             {
+                var path = _badgeService.GetBadgePath(challenge.SiteId, challenge.BadgeId.Value);
+
                 var badge = await _badgeRepository.GetByIdAsync((int)challenge.BadgeId);
                 if (badge != null)
                 {
-                    challenge.BadgeFilename = badge.Filename;
+                    challenge.BadgeFilename = path;
                     challenge.BadgeAltText = badge.AltText;
                 }
             }

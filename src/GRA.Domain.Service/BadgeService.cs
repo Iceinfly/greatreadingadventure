@@ -53,12 +53,7 @@ namespace GRA.Domain.Service
             return await _badgeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), result);
         }
 
-        public async Task<string> GetBadgeFilenameAsync(int id)
-        {
-            return await _badgeRepository.GetBadgeFileNameAsync(id);
-        }
-
-        public static string GetBadgePath(int siteId, int badgeId) =>
+        public string GetBadgePath(int siteId, int badgeId) =>
             $"site{siteId}/badges/badge{badgeId}.png";
 
 

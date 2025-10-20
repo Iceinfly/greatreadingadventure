@@ -652,7 +652,15 @@ namespace GRA.Controllers
 
             foreach (var userLog in userLogs.Data)
             {
-                userLog.BadgeFilename = _pathResolver.ResolveContentPath(userLog.BadgeFilename);
+                if (userLog.BadgeId.HasValue)
+                {
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), userLog.BadgeId.Value);
+                    userLog.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    userLog.BadgeFilename = null;
+                }
             }
 
             var viewModel = new BadgeListViewModel
@@ -958,8 +966,7 @@ namespace GRA.Controllers
                     viewModel.Message = viewModel.UserLog.Description;
                 }
 
-                var fileName = await _badgeService.GetBadgeFilenameAsync(
-                    viewModel.UserLog.BadgeId.Value);
+                var fileName = _badgeService.GetBadgePath(GetCurrentSiteId(), viewModel.UserLog.BadgeId.Value);
                 viewModel.UserLog.BadgeFilename = _pathResolver.ResolveContentPath(fileName);
             }
             catch (GraException gex)
@@ -1082,9 +1089,10 @@ namespace GRA.Controllers
                     CreatedAt = item.CreatedAt.ToString("d", CultureInfo.InvariantCulture),
                     PointsEarned = item.PointsEarned,
                 };
-                if (!string.IsNullOrWhiteSpace(item.BadgeFilename))
+                if (item.BadgeId.HasValue)
                 {
-                    itemModel.BadgeFilename = _pathResolver.ResolveContentPath(item.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), item.BadgeId.Value);
+                    itemModel.BadgeFilename = _pathResolver.ResolveContentPath(path);
                     itemModel.BadgeAltText = item.BadgeAltText;
                 }
                 else if (item.AvatarBundleId.HasValue)

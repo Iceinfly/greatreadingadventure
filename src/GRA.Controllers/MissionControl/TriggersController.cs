@@ -520,15 +520,24 @@ namespace GRA.Controllers.MissionControl
             }
             foreach (var requirement in viewModel.TriggerRequirements)
             {
-                if (!string.IsNullOrWhiteSpace(requirement.BadgePath))
+                if (requirement.BadgeId.HasValue)
                 {
-                    requirement.BadgePath = _pathResolver.ResolveContentPath(requirement.BadgePath);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), requirement.BadgeId.Value);
+                    requirement.BadgePath = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    requirement.BadgePath = null;
                 }
             }
-            if (!string.IsNullOrWhiteSpace(viewModel.Trigger.AwardBadgeFilename))
+            if (viewModel.Trigger.AwardBadgeId != default)
             {
-                viewModel.BadgePath
-                    = _pathResolver.ResolveContentPath(viewModel.Trigger.AwardBadgeFilename);
+                var path = _badgeService.GetBadgePath(GetCurrentSiteId(), viewModel.Trigger.AwardBadgeId);
+                viewModel.BadgePath = _pathResolver.ResolveContentPath(path);
+            }
+            else
+            {
+                viewModel.BadgePath = null;
             }
             if (attachment != null)
             {
@@ -949,8 +958,13 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var trigger in triggerList.Data)
             {
-                trigger.AwardBadgeFilename =
-                    _pathResolver.ResolveContentPath(trigger.AwardBadgeFilename);
+                string badgeUrl = null;
+                if (trigger.AwardBadgeId != default)
+                {
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), trigger.AwardBadgeId);
+                    badgeUrl = _pathResolver.ResolveContentPath(path);
+                }
+                trigger.AwardBadgeFilename = badgeUrl;
                 var graEvent = (await _eventService.GetRelatedEventsForTriggerAsync(trigger.Id))
                     .FirstOrDefault();
                 if (graEvent != null)

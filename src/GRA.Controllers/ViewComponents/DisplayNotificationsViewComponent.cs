@@ -5,8 +5,10 @@ using System.Linq;
 using System.Text;
 using GRA.Abstract;
 using GRA.Controllers.ViewModel.Shared;
+using GRA.Domain.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Localization;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Localization;
 
 namespace GRA.Controllers.ViewComponents
@@ -18,22 +20,27 @@ namespace GRA.Controllers.ViewComponents
         private readonly IPathResolver _pathResolver;
         private readonly IHtmlLocalizer<Resources.Shared> _sharedHtmlLocalizer;
         private readonly IStringLocalizer<Resources.Shared> _sharedLocalizer;
+        private readonly BadgeService _badgeService;
 
         public DisplayNotificationsViewComponent(IPathResolver pathResolver,
             IStringLocalizer<Resources.Shared> sharedLocalizer,
-            IHtmlLocalizer<Resources.Shared> sharedHtmlLocalizer)
+            IHtmlLocalizer<Resources.Shared> sharedHtmlLocalizer,
+            BadgeService badgeService)
         {
             ArgumentNullException.ThrowIfNull(pathResolver);
             ArgumentNullException.ThrowIfNull(sharedHtmlLocalizer);
             ArgumentNullException.ThrowIfNull(sharedLocalizer);
+            ArgumentNullException.ThrowIfNull(badgeService);
 
             _pathResolver = pathResolver;
             _sharedHtmlLocalizer = sharedHtmlLocalizer;
             _sharedLocalizer = sharedLocalizer;
+            _badgeService = badgeService;
         }
 
         public IViewComponentResult Invoke()
         {
+            var siteId = (int)ViewContext.HttpContext.Items[ItemKey.SiteId];
             var notifications =
                 (List<Domain.Model.Notification>)HttpContext.Items[ItemKey.NotificationsList];
             var totalNotifications = notifications.Count;
@@ -47,11 +54,15 @@ namespace GRA.Controllers.ViewComponents
                 totalPointsEarned += notification.PointsEarned;
                 if (notificationDisplayList.Count < MaxNotifications)
                 {
-                    if (!string.IsNullOrWhiteSpace(notification.BadgeFilename))
+                    if (notification.BadgeId.HasValue)
                     {
-                        notification.BadgeFilename
-                            = _pathResolver.ResolveContentPath(notification.BadgeFilename);
+                        var path = _badgeService.GetBadgePath(siteId, notification.BadgeId.Value);
+                        notification.BadgeFilename = _pathResolver.ResolveContentPath(path);
                         earnedBadge = true;
+                    }
+                    else
+                    {
+                        notification.BadgeFilename = null;
                     }
                     if (!string.IsNullOrWhiteSpace(notification.AttachmentFilename))
                     {
@@ -68,11 +79,14 @@ namespace GRA.Controllers.ViewComponents
                 totalPointsEarned += notification.PointsEarned;
                 if (notificationDisplayList.Count < MaxNotifications)
                 {
-                    if (!string.IsNullOrWhiteSpace(notification.BadgeFilename))
+                    if (notification.BadgeId.HasValue)
                     {
-                        notification.BadgeFilename
-                            = _pathResolver.ResolveContentPath(notification.BadgeFilename);
+                        var path = _badgeService.GetBadgePath(siteId, notification.BadgeId.Value);
                         earnedBadge = true;
+                    }
+                    else
+                    {
+                        notification.BadgeFilename = null;
                     }
                     if (!string.IsNullOrWhiteSpace(notification.AttachmentFilename))
                     {
@@ -93,11 +107,15 @@ namespace GRA.Controllers.ViewComponents
                 totalPointsEarned += notification.PointsEarned;
                 if (notificationDisplayList.Count < MaxNotifications)
                 {
-                    if (!string.IsNullOrWhiteSpace(notification.BadgeFilename))
+                    if (notification.BadgeId.HasValue)
                     {
-                        notification.BadgeFilename
-                            = _pathResolver.ResolveContentPath(notification.BadgeFilename);
+                        var path = _badgeService.GetBadgePath(siteId, notification.BadgeId.Value);
+                        notification.BadgeFilename = _pathResolver.ResolveContentPath(path);
                         earnedBadge = true;
+                    }
+                    else
+                    {
+                        notification.BadgeFilename = null;
                     }
                     if (!string.IsNullOrWhiteSpace(notification.AttachmentFilename))
                     {
@@ -121,15 +139,15 @@ namespace GRA.Controllers.ViewComponents
             var profileLink = Url.Action(nameof(ProfileController.History), ProfileController.Name);
 
             foreach (var notification in notifications
-                .Where(m => !string.IsNullOrWhiteSpace(m.BadgeFilename))
+                .Where(m => m.BadgeId.HasValue)
                 .OrderByDescending(m => m.PointsEarned)
                 .ThenByDescending(m => m.CreatedAt).ToList())
             {
                 totalPointsEarned += notification.PointsEarned;
                 if (notificationDisplayList.Count < MaxNotifications)
                 {
-                    notification.BadgeFilename
-                        = _pathResolver.ResolveContentPath(notification.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(siteId, notification.BadgeId.Value);
+                    notification.BadgeFilename = _pathResolver.ResolveContentPath(path);
                     earnedBadge = true;
                     if (!string.IsNullOrWhiteSpace(notification.AttachmentFilename))
                     {

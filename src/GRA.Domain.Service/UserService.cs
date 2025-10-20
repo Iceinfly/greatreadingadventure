@@ -1971,7 +1971,6 @@ namespace GRA.Domain.Service
                 // note this is localized and displayed properly in SessionTimeoutFilterAttribute
                 var notification = new Notification
                 {
-                    BadgeFilename = badge.Filename,
                     BadgeId = badge.Id,
                     PointsEarned = 0,
                     Text = $"<span class=\"far fa-thumbs-up\"></span> You've successfully joined <strong>{site.Name}</strong>!",
@@ -2026,7 +2025,6 @@ namespace GRA.Domain.Service
                             // note: localized and displayed in SessionTimeoutFilterAttribute
                             var notification = new Notification
                             {
-                                BadgeFilename = badge.Filename,
                                 BadgeId = badge.Id,
                                 PointsEarned = 0,
                                 Text = $"<span class=\"far fa-thumbs-up\"></span> You've successfully joined <strong>{site.Name}</strong>!",
@@ -2068,7 +2066,6 @@ namespace GRA.Domain.Service
                     Description = _sharedLocalizer[Annotations.Interface.Joined, site.Name]
                 });
                 notification.BadgeId = badge.Id;
-                notification.BadgeFilename = badge.Filename;
             }
             await _notificationRepository.AddSaveAsync(registeredUser.Id, notification);
         }

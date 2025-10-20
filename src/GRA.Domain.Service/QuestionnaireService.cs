@@ -337,7 +337,6 @@ namespace GRA.Domain.Service
                 Text = questionnaire.BadgeNotificationMessage,
                 UserId = userId,
                 BadgeId = badge.Id,
-                BadgeFilename = badge.Filename
             };
 
             await _notificationRepository.AddSaveAsync(userId, notification);

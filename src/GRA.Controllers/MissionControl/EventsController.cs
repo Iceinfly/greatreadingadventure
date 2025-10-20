@@ -860,9 +860,8 @@ namespace GRA.Controllers.MissionControl
 
                 if (graEvent.Challenge?.BadgeId != null)
                 {
-                    var badge = await _badgeService.GetByIdAsync(graEvent.Challenge.BadgeId.Value);
-                    graEvent.Challenge.BadgeFilename = _pathResolver
-                        .ResolveContentPath(badge.Filename);
+                    var path = _badgeService.GetBadgePath(graEvent.Challenge.SiteId, graEvent.Challenge.BadgeId.Value);
+                    graEvent.Challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
                 }
 
                 var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingStringAsync(
@@ -1113,9 +1112,8 @@ namespace GRA.Controllers.MissionControl
 
                 if (graEvent.Challenge?.BadgeId != null)
                 {
-                    var badge = await _badgeService.GetByIdAsync(graEvent.Challenge.BadgeId.Value);
-                    graEvent.Challenge.BadgeFilename = _pathResolver
-                        .ResolveContentPath(badge.Filename);
+                    var path = _badgeService.GetBadgePath(graEvent.Challenge.SiteId, graEvent.Challenge.BadgeId.Value);
+                    graEvent.Challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
                 }
 
                 return View("AddEditStreaming", model);

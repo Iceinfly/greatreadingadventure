@@ -25,6 +25,7 @@ namespace GRA.Controllers
         public const string StatusUncompleted = "Uncompleted";
 
         private readonly ActivityService _activityService;
+        private readonly BadgeService _badgeService;
         private readonly CategoryService _categoryService;
         private readonly ChallengeService _challengeService;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -35,12 +36,14 @@ namespace GRA.Controllers
         public ChallengesController(ILogger<ChallengesController> logger,
             ServiceFacade.Controller context,
             ActivityService activityService,
+            BadgeService badgeService,
             CategoryService categoryService,
             ChallengeService challengeService,
             IHttpContextAccessor httpContextAccessor,
             SiteService siteService) : base(context)
         {
             ArgumentNullException.ThrowIfNull(activityService);
+            ArgumentNullException.ThrowIfNull(badgeService);
             ArgumentNullException.ThrowIfNull(categoryService);
             ArgumentNullException.ThrowIfNull(challengeService);
             ArgumentNullException.ThrowIfNull(context?.Mapper);
@@ -49,6 +52,7 @@ namespace GRA.Controllers
             ArgumentNullException.ThrowIfNull(siteService);
 
             _activityService = activityService;
+            _badgeService = badgeService;
             _categoryService = categoryService;
             _challengeService = challengeService;
             _httpContextAccessor = httpContextAccessor;
@@ -113,14 +117,18 @@ namespace GRA.Controllers
             }
             var siteStage = GetSiteStage();
 
-            if (!string.IsNullOrEmpty(challenge.BadgeFilename))
+            string badgeUrl = null;
+            if (challenge.BadgeId.HasValue)
             {
-                challenge.BadgeFilename = _pathResolver.ResolveContentPath(challenge.BadgeFilename);
+                var path = _badgeService.GetBadgePath(challenge.SiteId, challenge.BadgeId.Value);
+                badgeUrl = _pathResolver.ResolveContentPath(path);
             }
+
+            challenge.BadgeFilename = badgeUrl;
 
             bool isActive = AuthUser.Identity.IsAuthenticated && siteStage == SiteStage.ProgramOpen;
             bool showCompleted = siteStage == SiteStage.ProgramOpen
-                || siteStage == SiteStage.ProgramEnded;
+              || siteStage == SiteStage.ProgramEnded;
 
             var viewModel = new ChallengeDetailViewModel
             {
@@ -133,14 +141,15 @@ namespace GRA.Controllers
                 Tasks = new List<TaskDetailViewModel>(),
                 IsBadgeEarning = challenge.BadgeId.HasValue,
                 PointCountAndDescription = challenge.PointsAwarded == 1
-                    ? _sharedLocalizer[Annotations.Info.PointSingular, challenge.PointsAwarded]
-                    : _sharedLocalizer[Annotations.Info.PointsPlural, challenge.PointsAwarded],
+                ? _sharedLocalizer[Annotations.Info.PointSingular, challenge.PointsAwarded]
+                : _sharedLocalizer[Annotations.Info.PointsPlural, challenge.PointsAwarded],
                 TaskCountAndDescription = challenge.TasksToComplete == 1
-                    ? _sharedLocalizer[Annotations.Info.TaskSingular, challenge.TasksToComplete]
-                    : _sharedLocalizer[Annotations.Info.TasksPlural, challenge.TasksToComplete]
+                ? _sharedLocalizer[Annotations.Info.TaskSingular, challenge.TasksToComplete]
+                : _sharedLocalizer[Annotations.Info.TasksPlural, challenge.TasksToComplete]
             };
 
             var siteUrl = await _siteLookupService.GetSiteLinkAsync(GetCurrentSiteId());
+
             foreach (var task in challenge.Tasks)
             {
                 var taskModel = new TaskDetailViewModel
@@ -166,7 +175,6 @@ namespace GRA.Controllers
             PageTitle = _sharedLocalizer[Annotations.Title.ChallengeDetails, challenge.Name];
             return View(viewModel);
         }
-
         public async Task<IActionResult> Index(string Search = null,
                     int? Program = null,
                     string Categories = null,
@@ -305,15 +313,17 @@ namespace GRA.Controllers
 
             foreach (var challenge in challengeList.Data)
             {
-                if (!string.IsNullOrEmpty(challenge.BadgeFilename))
+                string badgeUrl = null;
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename = _pathResolver
-                        .ResolveContentPath(challenge.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(challenge.SiteId, challenge.BadgeId.Value);
+                    badgeUrl = _pathResolver.ResolveContentPath(path);
                 }
                 if (challenge.IsCompleted == true)
                 {
                     challenge.Status = _sharedLocalizer[Annotations.Interface.Completed];
                 }
+                challenge.BadgeFilename = badgeUrl;
             }
 
             var siteStage = GetSiteStage();

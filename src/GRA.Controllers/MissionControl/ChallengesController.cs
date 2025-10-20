@@ -711,10 +711,14 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var challenge in challengeList.Data)
             {
-                if (!string.IsNullOrEmpty(challenge.BadgeFilename))
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename
-                        = _pathResolver.ResolveContentPath(challenge.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), challenge.BadgeId.Value);
+                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    challenge.BadgeFilename = null;
                 }
             }
 
@@ -1122,10 +1126,14 @@ namespace GRA.Controllers.MissionControl
             model.ChallengeGroup.Challenges = await _challengeService.GetByIdsAsync(challengeIds);
             foreach (var challenge in model.ChallengeGroup.Challenges)
             {
-                if (!string.IsNullOrWhiteSpace(challenge.BadgeFilename))
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(
-                        challenge.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), challenge.BadgeId.Value);
+                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    challenge.BadgeFilename = null;
                 }
             }
 
@@ -1181,10 +1189,14 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var challenge in viewModel.ChallengeGroup.Challenges)
             {
-                if (!string.IsNullOrWhiteSpace(challenge.BadgeFilename))
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(
-                        challenge.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), challenge.BadgeId.Value);
+                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    challenge.BadgeFilename = null;
                 }
             }
 
@@ -1233,10 +1245,14 @@ namespace GRA.Controllers.MissionControl
             model.CanManageEvents = UserHasPermission(Permission.ManageEvents);
             foreach (var challenge in model.ChallengeGroup.Challenges)
             {
-                if (!string.IsNullOrWhiteSpace(challenge.BadgeFilename))
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(
-                        challenge.BadgeFilename);
+                    var path = _badgeService.GetBadgePath(GetCurrentSiteId(), challenge.BadgeId.Value);
+                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    challenge.BadgeFilename = null;
                 }
             }
 

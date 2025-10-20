@@ -27,6 +27,7 @@ namespace GRA.Controllers
         private const string TitleErrorMessage = "TitleErrorMessage";
         private readonly ActivityService _activityService;
         private readonly AvatarService _avatarService;
+        private readonly BadgeService _badgeService;
         private readonly CarouselService _carouselService;
         private readonly DailyLiteracyTipService _dailyLiteracyTipService;
         private readonly DashboardContentService _dashboardContentService;
@@ -46,6 +47,7 @@ namespace GRA.Controllers
             ServiceFacade.Controller context,
             ActivityService activityService,
             AvatarService avatarService,
+            BadgeService badgeService,
             CarouselService carouselService,
             DailyLiteracyTipService dailyLiteracyTipService,
             DashboardContentService dashboardContentService,
@@ -63,6 +65,7 @@ namespace GRA.Controllers
         {
             ArgumentNullException.ThrowIfNull(activityService);
             ArgumentNullException.ThrowIfNull(avatarService);
+            ArgumentNullException.ThrowIfNull(badgeService);
             ArgumentNullException.ThrowIfNull(carouselService);
             ArgumentNullException.ThrowIfNull(dailyLiteracyTipService);
             ArgumentNullException.ThrowIfNull(dashboardContentService);
@@ -80,6 +83,7 @@ namespace GRA.Controllers
 
             _activityService = activityService;
             _avatarService = avatarService;
+            _badgeService = badgeService;
             _carouselService = carouselService;
             _dailyLiteracyTipService = dailyLiteracyTipService;
             _dashboardContentService = dashboardContentService;
@@ -214,8 +218,15 @@ namespace GRA.Controllers
 
                 foreach (var userLog in userLogs.Data)
                 {
-                    userLog.BadgeFilename
-                        = _pathResolver.ResolveContentPath(userLog.BadgeFilename);
+                    if (userLog.BadgeId.HasValue)
+                    {
+                        var path = _badgeService.GetBadgePath(GetCurrentSiteId(), userLog.BadgeId.Value);
+                        userLog.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                    }
+                    else
+                    {
+                        userLog.BadgeFilename = null;
+                    }
                 }
 
                 var pointTranslation = await _activityService.GetUserPointTranslationAsync();

@@ -813,9 +813,8 @@ namespace GRA.Domain.Service
                 UserId = userIdToLog,
                 Text = trigger.AwardMessage,
                 BadgeId = trigger.AwardBadgeId,
-                BadgeFilename = badge.Filename,
                 AttachmentFilename = (attachment?.IsCertificate == true)
-                    ? BuildCertificatePath(attachment!.Id, siteId) : null
+                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
             });
 
             // find if the trigger is related to an event
@@ -1248,7 +1247,6 @@ namespace GRA.Domain.Service
                 if (badge != null)
                 {
                     notification.BadgeId = challenge.BadgeId;
-                    notification.BadgeFilename = badge.Filename;
                 }
 
                 await _notificationRepository.AddSaveAsync(authUserId, notification);
@@ -1508,9 +1506,8 @@ namespace GRA.Domain.Service
                     UserId = userId,
                     Text = trigger.AwardMessage,
                     BadgeId = trigger.AwardBadgeId,
-                    BadgeFilename = badge.Filename,
                     AttachmentFilename = (attachment?.IsCertificate == true)
-                    ? BuildCertificatePath(attachment!.Id, siteId) : null
+                    ? BuildCertificateRelativePath(attachment!.Id, siteId) : null
                 });
 
                 // find if the trigger is related to an event
@@ -1708,7 +1705,7 @@ namespace GRA.Domain.Service
             return assignedCode;
         }
 
-        private string BuildCertificatePath(int attachmentId, int? siteId = null)
+        private string BuildCertificateRelativePath(int attachmentId, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
             return $"site{site}/attachments/certificates/certificate{attachmentId}.pdf";

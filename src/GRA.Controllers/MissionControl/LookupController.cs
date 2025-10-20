@@ -17,16 +17,20 @@ namespace GRA.Controllers.MissionControl
     [Authorize(Policy = Policy.AccessMissionControl)]
     public class LookupController : Base.MCController
     {
+        private readonly BadgeService _badgeService;
         private readonly ChallengeService _challengeService;
         private readonly ILogger<LookupController> _logger;
         private readonly TriggerService _triggerService;
 
         public LookupController(ILogger<LookupController> logger,
              ServiceFacade.Controller context,
+             BadgeService badgeService,
              ChallengeService challengeService,
              TriggerService triggerService) : base(context)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _badgeService = badgeService 
+                ?? throw new ArgumentNullException(nameof(badgeService));
             _challengeService = challengeService
                 ?? throw new ArgumentNullException(nameof(challengeService));
             _triggerService = triggerService
@@ -133,10 +137,15 @@ namespace GRA.Controllers.MissionControl
 
             foreach (var challenge in viewModel.Challenges)
             {
-                if (!string.IsNullOrWhiteSpace(challenge.BadgeFilename))
+                if (challenge.BadgeId.HasValue)
                 {
-                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(
-                        challenge.BadgeFilename);
+                    var path = 
+                        _badgeService.GetBadgePath(challenge.SiteId, challenge.BadgeId.Value);
+                    challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    challenge.BadgeFilename = null;
                 }
             }
 
@@ -211,9 +220,15 @@ namespace GRA.Controllers.MissionControl
             };
             foreach (var requirement in requirements.Data)
             {
-                if (!string.IsNullOrWhiteSpace(requirement.BadgePath))
+                if (requirement.BadgeId.HasValue)
                 {
-                    requirement.BadgePath = _pathResolver.ResolveContentPath(requirement.BadgePath);
+                    var path = 
+                        _badgeService.GetBadgePath(GetCurrentSiteId(), requirement.BadgeId.Value);
+                    requirement.BadgePath = _pathResolver.ResolveContentPath(path);
+                }
+                else
+                {
+                    requirement.BadgePath = null;
                 }
             }
 
