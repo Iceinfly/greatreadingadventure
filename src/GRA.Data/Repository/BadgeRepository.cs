@@ -31,15 +31,6 @@ namespace GRA.Data.Repository
             }
         }
 
-        public async Task<string> GetBadgeFileNameAsync(int badgeId)
-        {
-            return await DbSet
-                .AsNoTracking()
-                .Where(_ => _.Id == badgeId)
-                .Select(_ => _.Filename)
-                .SingleOrDefaultAsync();
-        }
-
         public async Task<string> GetBadgeNameAsync(int badgeId)
         {
             var trigger = await _context.Triggers
@@ -139,7 +130,7 @@ namespace GRA.Data.Repository
                 .Join(_context.Badges,
                     u => u.Id,
                     b => b.CreatedBy,
-                    (_, b) => b.Filename)
+                    (_, b) => $"site{b.SiteId}/badges/badge{b.Id}.png")
                 .ToListAsync();
         }
 

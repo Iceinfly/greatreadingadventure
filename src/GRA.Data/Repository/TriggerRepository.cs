@@ -300,8 +300,7 @@ namespace GRA.Data.Repository
                         BadgeId = badgeId,
                         Name = badgeTrigger.Name,
                         Icon = TriggerIcon,
-                        IconDescription = TriggerDescription,
-                        BadgePath = badge.Filename
+                        IconDescription = TriggerDescription
                     });
                 }
                 else
@@ -316,7 +315,6 @@ namespace GRA.Data.Repository
                         {
                             BadgeId = badgeId,
                             Icon = ProgramIcon,
-                            BadgePath = badge.Filename,
                             Name = programBadge.JoinBadgeName,
                             IconDescription = JoinDescription
                         };
@@ -335,7 +333,6 @@ namespace GRA.Data.Repository
                                 Name = questionnareBadge.BadgeName,
                                 Icon = ProgramIcon,
                                 IconDescription = QuestionnaireDescription,
-                                BadgePath = badge.Filename
                             });
                         }
                         else
@@ -344,8 +341,7 @@ namespace GRA.Data.Repository
                             {
                                 BadgeId = badgeId,
                                 Name = "Unknown",
-                                Icon = "",
-                                BadgePath = badge.Filename
+                                Icon = ""
                             });
                         }
                     }

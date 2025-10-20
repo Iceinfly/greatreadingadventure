@@ -282,7 +282,6 @@ namespace GRA.Data.Repository
                         .AsNoTracking()
                         .Where(_ => _.Id == userLog.BadgeId)
                         .SingleOrDefault();
-                    userLog.BadgeFilename = badge.Filename;
                     userLog.BadgeAltText = badge.AltText;
                 }
                 if (userLog.AttachmentId != null)

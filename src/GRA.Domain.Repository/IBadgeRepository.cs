@@ -8,8 +8,6 @@ namespace GRA.Domain.Repository
     {
         Task AddUserBadge(int userId, int badgeId);
 
-        Task<string> GetBadgeFileNameAsync(int badgeId);
-
         Task<string> GetBadgeNameAsync(int badgeId);
 
         Task<IEnumerable<string>> GetBadgeNamesAsync(IEnumerable<int> ids);
