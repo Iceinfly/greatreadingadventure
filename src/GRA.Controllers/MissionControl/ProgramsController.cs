@@ -170,7 +170,6 @@ namespace GRA.Controllers.MissionControl
                         }
                         var newBadge = new Badge
                         {
-                            Filename = filename,
                             AltText = model.BadgeAltText
                         };
                         var badge = await _badgeService.AddBadgeAsync(newBadge, badgeBytes);
@@ -275,7 +274,8 @@ namespace GRA.Controllers.MissionControl
                     var badge = await _badgeService.GetByIdAsync(program.JoinBadgeId.Value);
                     if (badge != null)
                     {
-                        viewModel.BadgePath = _pathResolver.ResolveContentPath(badge.Filename);
+                        var path = _badgeService.GetBadgePath(badge.SiteId, badge.Id);
+                        viewModel.BadgePath = _pathResolver.ResolveContentPath(path);
                         viewModel.BadgeAltText = badge.AltText;
                     }
                 }
@@ -402,7 +402,6 @@ namespace GRA.Controllers.MissionControl
                         {
                             var existing = await _badgeService
                                         .GetByIdAsync(model.Program.JoinBadgeId.Value);
-                            existing.Filename = Path.GetFileName(model.BadgePath);
                             await _badgeService.ReplaceBadgeFileAsync(existing,
                                 badgeBytes,
                                 model.BadgeUploadImage.FileName);
@@ -411,7 +410,6 @@ namespace GRA.Controllers.MissionControl
                         {
                             var newBadge = new Badge
                             {
-                                Filename = filename,
                                 AltText = model.BadgeAltText
                             };
                             var badge = await _badgeService.AddBadgeAsync(newBadge, badgeBytes);

@@ -363,7 +363,7 @@ namespace GRA.Data.Repository
                     IconDescription = ChallengeDescription,
                     BadgePath = await _context.Badges.AsNoTracking()
                         .Where(_ => _.Id == challenge.BadgeId)
-                        .Select(_ => _.Filename)
+                        .Select(_ => "site" + _.SiteId + "/badges/badge" + _.Id + ".png")
                         .SingleOrDefaultAsync()
                 });
             }
@@ -516,7 +516,10 @@ namespace GRA.Data.Repository
                                                    Name = challenges.Name,
                                                    Icon = ChallengeIcon,
                                                    IconDescription = ChallengeDescription,
-                                                   BadgePath = badges.Filename
+                                                   BadgePath = badges == null
+                                                   ? null
+                                                   : "site" + badges.SiteId + "/badges/badge"
+                                                   + badges.Id + ".png"
                                                }
                 )
                 .OrderBy(_ => _.Name)
@@ -543,7 +546,8 @@ namespace GRA.Data.Repository
                                                  Name = triggers.Name,
                                                  Icon = TriggerIcon,
                                                  IconDescription = TriggerDescription,
-                                                 BadgePath = badges.Filename
+                                                 BadgePath = "site" + badges.SiteId
+                                                 + "/badges/badge" + badges.Id + ".png"
                                              }
                 )
                 .OrderBy(_ => _.Name)
@@ -569,7 +573,8 @@ namespace GRA.Data.Repository
                                                      Name = programs.JoinBadgeName,
                                                      Icon = ProgramIcon,
                                                      IconDescription = JoinDescription,
-                                                     BadgePath = badges.Filename
+                                                     BadgePath = "site" + badges.SiteId
+                                                     + "/badges/badge" + badges.Id + ".png"
                                                  }
                     )
                     .OrderBy(_ => _.Name)
@@ -591,7 +596,8 @@ namespace GRA.Data.Repository
                                                            Name = questionnaires.BadgeName,
                                                            Icon = ProgramIcon,
                                                            IconDescription = QuestionnaireDescription,
-                                                           BadgePath = badges.Filename
+                                                           BadgePath = "site" + badges.SiteId
+                                                           + "/badges/badge" + badges.Id + ".png"
                                                        }
                     )
                     .OrderBy(_ => _.Name)

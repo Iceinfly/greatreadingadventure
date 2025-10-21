@@ -164,7 +164,6 @@ namespace GRA.Controllers.MissionControl
                         }
                         var newBadge = new Badge
                         {
-                            Filename = filename,
                             AltText = model.BadgeAltText
                         };
                         var badge = await _badgeService.AddBadgeAsync(newBadge, badgeBytes);

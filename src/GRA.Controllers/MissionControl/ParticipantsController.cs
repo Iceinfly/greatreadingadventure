@@ -32,6 +32,7 @@ namespace GRA.Controllers.MissionControl
         private readonly ActivityService _activityService;
         private readonly AuthenticationService _authenticationService;
         private readonly AvatarService _avatarService;
+        private readonly BadgeService _badgeService;
         private readonly DrawingService _drawingService;
         private readonly EmailManagementService _emailManagementService;
         private readonly JobService _jobService;
@@ -53,6 +54,7 @@ namespace GRA.Controllers.MissionControl
             ActivityService activityService,
             AuthenticationService authenticationService,
             AvatarService avatarService,
+            BadgeService badgeService,
             DrawingService drawingService,
             EmailManagementService emailManagementService,
             JobService jobService,
@@ -71,6 +73,7 @@ namespace GRA.Controllers.MissionControl
             ArgumentNullException.ThrowIfNull(activityService);
             ArgumentNullException.ThrowIfNull(authenticationService);
             ArgumentNullException.ThrowIfNull(avatarService);
+            ArgumentNullException.ThrowIfNull(badgeService);
             ArgumentNullException.ThrowIfNull(drawingService);
             ArgumentNullException.ThrowIfNull(emailManagementService);
             ArgumentNullException.ThrowIfNull(jobService);
@@ -89,6 +92,7 @@ namespace GRA.Controllers.MissionControl
             _activityService = activityService;
             _authenticationService = authenticationService;
             _avatarService = avatarService;
+            _badgeService = badgeService;
             _drawingService = drawingService;
             _emailManagementService = emailManagementService;
             _jobService = jobService;
@@ -2163,9 +2167,11 @@ namespace GRA.Controllers.MissionControl
                         ItemName = itemName,
                         PointsEarned = item.PointsEarned,
                     };
-                    if (!string.IsNullOrWhiteSpace(item.BadgeFilename))
+                    if (item.BadgeId.HasValue)
                     {
-                        itemModel.BadgeFilename = _pathResolver.ResolveContentPath(item.BadgeFilename);
+                        var siteId = GetCurrentSiteId();
+                        var path = _badgeService.GetBadgePath(siteId, item.BadgeId.Value);
+                        item.BadgeFilename = _pathResolver.ResolveContentPath(path);
                     }
                     else if (item.AvatarBundleId.HasValue)
                     {

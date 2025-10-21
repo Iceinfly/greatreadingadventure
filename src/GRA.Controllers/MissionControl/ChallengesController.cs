@@ -325,7 +325,8 @@ namespace GRA.Controllers.MissionControl
                 var challengeBadge = await _badgeService.GetByIdAsync((int)challenge.BadgeId);
                 if (challengeBadge != null)
                 {
-                    viewModel.BadgePath = _pathResolver.ResolveContentPath(challengeBadge.Filename);
+                    var path = _badgeService.GetBadgePath(challengeBadge.SiteId, challengeBadge.Id);
+                    viewModel.BadgePath = _pathResolver.ResolveContentPath(path);
                     viewModel.BadgeAltText = challengeBadge.AltText;
                 }
             }
@@ -469,7 +470,6 @@ namespace GRA.Controllers.MissionControl
                             existing.AltText = model.BadgeAltText;
                             await _badgeService.ReplaceBadgeFileAsync(existing, null, null);
                         }
-                        existing.Filename = Path.GetFileName(model.BadgePath);
                         existing.AltText = model.BadgeAltText;
                         await _badgeService.ReplaceBadgeFileAsync(existing,
                             badgeBytes,
