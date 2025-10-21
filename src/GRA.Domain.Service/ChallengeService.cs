@@ -228,7 +228,7 @@ namespace GRA.Domain.Service
                 newTask.ChallengeTaskType = task.ChallengeTaskType;
                 if (fileBytes != null)
                 {
-                    newTask.Filename = WriteTaskFile(newTask, fileBytes);
+                    WriteTaskFile(newTask, fileBytes);
                     newTask = await _challengeTaskRepository
                         .UpdateSaveAsync(GetClaimId(ClaimType.UserId), newTask);
                 }
@@ -392,17 +392,12 @@ namespace GRA.Domain.Service
 
                 if (fileBytes != null)
                 {
-                    if (!string.IsNullOrWhiteSpace(originalTask.Filename))
-                    {
-                        RemoveTaskFile(originalTask);
-                    }
-                    task.Filename = WriteTaskFile(task, fileBytes);
+                    RemoveTaskFile(originalTask);
+                    WriteTaskFile(task, fileBytes);
                 }
-                else if (!string.IsNullOrWhiteSpace(originalTask.Filename)
-                    && string.IsNullOrWhiteSpace(task.Filename))
+                else if (string.IsNullOrWhiteSpace(task.Filename))
                 {
                     RemoveTaskFile(originalTask);
-                    task.Filename = null;
                 }
                 else
                 {
@@ -681,10 +676,7 @@ namespace GRA.Domain.Service
                     throw new GraException("Challenge has been started by a participant.");
                 }
                 var task = await _challengeTaskRepository.GetByIdAsync(taskId);
-                if (!string.IsNullOrWhiteSpace(task.Filename))
-                {
-                    RemoveTaskFile(task);
-                }
+                RemoveTaskFile(task);
                 await _challengeTaskRepository
                     .RemoveSaveAsync(GetClaimId(ClaimType.UserId), taskId);
 
@@ -736,6 +728,9 @@ namespace GRA.Domain.Service
             }
         }
 
+        public string GetTaskPath(int siteId, int taskId)
+            => $"site{siteId}/{TaskFilesPath}/task{taskId}.png";
+
         private string GetTaskFilePath(string filename)
         {
             string contentDir = _pathResolver.ResolveContentFilePath();
@@ -748,6 +743,15 @@ namespace GRA.Domain.Service
             return Path.Combine(contentDir, filename);
         }
 
+        private string GetTaskFilePathById(int siteId, int taskId)
+        {
+            var fileName = $"task{taskId}.png";
+            var contentDir = _pathResolver.ResolveContentFilePath();
+            contentDir = Path.Combine(contentDir, $"site{siteId}", TaskFilesPath);
+            Directory.CreateDirectory(contentDir);
+            return Path.Combine(contentDir, fileName);
+        }
+
         private string GetTaskUrlPath(string filename)
         {
             return $"site{GetCurrentSiteId()}/{TaskFilesPath}/{filename}";
@@ -755,7 +759,7 @@ namespace GRA.Domain.Service
 
         private void RemoveTaskFile(ChallengeTask task)
         {
-            var filePath = _pathResolver.ResolveContentFilePath(task.Filename);
+            var filePath = GetTaskFilePathById(GetCurrentSiteId(), task.Id);
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -765,14 +769,10 @@ namespace GRA.Domain.Service
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization",
             "CA1308:Normalize strings to uppercase",
             Justification = "Normalize file extensions to lowercase")]
-        private string WriteTaskFile(ChallengeTask task, byte[] taskFile)
+        private void WriteTaskFile(ChallengeTask task, byte[] taskFile)
         {
-            string extension = Path.GetExtension(task.Filename).ToLowerInvariant();
-            string filename = $"task{task.Id}{extension}";
-            string fullFilePath = GetTaskFilePath(filename);
-            _logger.LogDebug("Writing out task file {TaskFile}", fullFilePath);
-            File.WriteAllBytes(fullFilePath, taskFile);
-            return GetTaskUrlPath(filename);
+            var fullPath = GetTaskFilePathById(GetCurrentSiteId(), task.Id);
+            File.WriteAllBytes(fullPath, taskFile);
         }
 
         #region Featured Challenge Groups methods

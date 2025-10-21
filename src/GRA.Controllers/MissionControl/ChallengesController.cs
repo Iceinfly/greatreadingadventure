@@ -246,11 +246,9 @@ namespace GRA.Controllers.MissionControl
                     {
                         task.Description = CommonMark.CommonMarkConverter.Convert(task.Title);
                     }
-                    if (!string.IsNullOrWhiteSpace(task.Filename))
-                    {
-                        var contentPath = _pathResolver.ResolveContentPath(task.Filename);
-                        task.Filename = $"{siteUrl}{contentPath}";
-                    }
+                    var path = _challengeService.GetTaskPath(challenge.SiteId, task.Id);
+                    var contentPath = _pathResolver.ResolveContentPath(path);
+                    task.Filename = $"{siteUrl}{contentPath}";
                 }
                 if (TempData.TryGetValue(TempEditChallenge, out object value))
                 {
@@ -893,7 +891,6 @@ namespace GRA.Controllers.MissionControl
                 }
                 if (viewModel.TaskUploadFile != null)
                 {
-                    viewModel.Task.Filename = viewModel.TaskUploadFile.FileName;
                     await using var fileStream = viewModel.TaskUploadFile.OpenReadStream();
                     await using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);

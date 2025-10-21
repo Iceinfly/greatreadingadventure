@@ -167,7 +167,8 @@ namespace GRA.Controllers
                 }
                 if (!string.IsNullOrWhiteSpace(task.Filename))
                 {
-                    var contentPath = _pathResolver.ResolveContentPath(task.Filename);
+                    var path = _challengeService.GetTaskPath(challenge.SiteId, task.Id);
+                    var contentPath = _pathResolver.ResolveContentPath(path);
                     taskModel.FilePath = $"{siteUrl}{contentPath}";
                 }
                 viewModel.Tasks.Add(taskModel);
