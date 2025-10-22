@@ -262,33 +262,18 @@ namespace GRA.Domain.Service
             VerifyManagementPermission();
             var siteId = GetCurrentSiteId();
 
-            var kitImageDirectory = _pathResolver.ResolveContentFilePath(
-                        Path.Combine($"site{siteId}", KitImagePath));
-            Directory.CreateDirectory(kitImageDirectory);
-
-            var kit = await _psKitRepository.GetByIdAsync(kitId);
-
-            var kitFilename = AlphanumericRegex.Replace(kit.Name, "");
-            var imageFilename = $"{kitFilename}{fileExtension}";
-
-            while (System.IO.File.Exists(Path.Combine(kitImageDirectory, imageFilename)))
-            {
-                imageFilename = $"{kitFilename}" +
-                    $"_{Path.GetRandomFileName().Replace(".", "")}{fileExtension}";
-            }
-
-            var imagePath = Path.Combine($"site{siteId}", KitImagePath, imageFilename);
-            var filePath = _pathResolver.ResolveContentFilePath(imagePath);
-            File.WriteAllBytes(filePath, imageBytes);
-
             var kitImage = new PsKitImage
             {
-                KitId = kit.Id,
-                Filename = imagePath
+                KitId = kitId
             };
 
-            await _psKitImageRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
-                kitImage);
+            kitImage = await _psKitImageRepository.AddSaveAsync(
+                GetClaimId(ClaimType.UserId), kitImage);
+
+            var fullPath = GetKitImageFilePath(siteId, kitImage.Id);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+            File.WriteAllBytes(fullPath, imageBytes);
         }
 
         public async Task<PsPerformer> AddPerformerAsync(PsPerformer performer,
@@ -759,6 +744,17 @@ namespace GRA.Domain.Service
         public async Task<int> GetKitCountAsync()
         {
             return await _psKitRepository.GetKitCountAsync();
+        }
+
+        public string GetKitImagePath(int siteId, int imageId)
+            => $"site{siteId}/{KitImagePath}/kitimage{imageId}.png";
+
+        private string GetKitImageFilePath(int siteId, int imageId)
+        {
+            var root = _pathResolver.ResolveContentFilePath();
+            var dir = Path.Combine(root, $"site{siteId}", KitImagePath);
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir, $"kitimage{imageId}.png");
         }
 
         public async Task<List<int>> GetKitIndexListAsync()
@@ -1854,9 +1850,13 @@ namespace GRA.Domain.Service
         private async Task RemoveKitImageAsync(PsKitImage image)
         {
             var authId = GetClaimId(ClaimType.UserId);
-
             await _psKitImageRepository.RemoveSaveAsync(authId, image.Id);
-            var file = _pathResolver.ResolveContentFilePath(image.Filename);
+
+            var siteId = GetCurrentSiteId();
+            var root = _pathResolver.ResolveContentFilePath();
+            var path = Path.Combine(root, $"site{siteId}", KitImagePath);
+            var file = Path.Combine(path, $"kitimage{image.Id}.png");
+
             if (System.IO.File.Exists(file))
             {
                 System.IO.File.Delete(file);

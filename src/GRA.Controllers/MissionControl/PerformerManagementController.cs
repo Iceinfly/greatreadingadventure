@@ -1674,8 +1674,9 @@ namespace GRA.Controllers.MissionControl
 
             if (kit.Images.Count > 0)
             {
-                viewModel.ImagePath = _pathResolver.ResolveContentPath(
-                    kit.Images[0].Filename);
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetKitImagePath(siteId, kit.Images[0].Id);
+                viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }
 
             if (!string.IsNullOrWhiteSpace(kit.Website)
@@ -1896,8 +1897,12 @@ namespace GRA.Controllers.MissionControl
                 KitImages = kit.Images.ToList(),
                 MaxUploadMB = MaxUploadMB
             };
-            viewModel.KitImages.ForEach(_ => _.Filename =
-                _pathResolver.ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            viewModel.KitImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetKitImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             return View(viewModel);
         }
