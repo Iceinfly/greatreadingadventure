@@ -401,33 +401,26 @@ namespace GRA.Domain.Service
                 }
             }
 
-            var siteId = GetCurrentSiteId();
-
-            var programImageDirectory = _pathResolver.ResolveContentFilePath(
-                        Path.Combine($"site{siteId}", ProgramImagePath));
-            Directory.CreateDirectory(programImageDirectory);
-
-            var programFilename = AlphanumericRegex.Replace(program.Title, "");
-            var imageFilename = $"{programFilename}{fileExtension}";
-
-            while (System.IO.File.Exists(Path.Combine(programImageDirectory, imageFilename)))
+            if (imageBytes == null || imageBytes.Length == 0)
             {
-                imageFilename = $"{programFilename}" +
-                    $"_{Path.GetRandomFileName().Replace(".", "")}{fileExtension}";
+                throw new GraException("Image upload is empty.");
             }
 
-            var imagePath = Path.Combine($"site{siteId}", ProgramImagePath, imageFilename);
-            var filePath = _pathResolver.ResolveContentFilePath(imagePath);
-            System.IO.File.WriteAllBytes(filePath, imageBytes);
+            var siteId = GetCurrentSiteId();
 
             var programImage = new PsProgramImage
             {
                 ProgramId = program.Id,
-                Filename = imagePath
             };
 
-            await _psProgramImageRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
+            programImage = await _psProgramImageRepository
+                .AddSaveAsync(GetClaimId(ClaimType.UserId),
                 programImage);
+
+            var fullPath = GetProgramImageFilePath(siteId, programImage.Id);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+            System.IO.File.WriteAllBytes(fullPath, imageBytes);
         }
 
         public async Task<bool> BranchAgeGroupAlreadySelectedAsync(int ageGroupId,
@@ -1104,6 +1097,17 @@ namespace GRA.Domain.Service
         {
             return await _psProgramRepository.GetProgramCountAsync();
         }
+
+        private string GetProgramImageFilePath(int siteId, int imageId)
+        {
+            var root = _pathResolver.ResolveContentPath();
+            var dir = Path.Combine(root, $"site{siteId}", ProgramImagePath);
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir, $"programimage{imageId}.png");
+        }
+
+        public string GetProgramImagePath(int siteId, int imageId)
+            => $"site{siteId}/{ProgramImagePath}/programimage{imageId}.png";
 
         public async Task<List<int>> GetProgramIndexListAsync(int? ageGroupId = null,
             bool onlyApproved = false)
@@ -1866,9 +1870,14 @@ namespace GRA.Domain.Service
         private async Task RemovePerformerImageAsync(PsPerformerImage image)
         {
             var authId = GetClaimId(ClaimType.UserId);
-
             await _psPerformerImageRepository.RemoveSaveAsync(authId, image.Id);
-            var file = _pathResolver.ResolveContentFilePath(image.Filename);
+
+
+            var siteId = GetCurrentSiteId();
+            var root = _pathResolver.ResolveContentPath();
+            var path = Path.Combine(root, $"site{siteId}", ProgramImagePath);
+            var file = Path.Combine(path, $"programimage{image.Id}.png");
+
             if (System.IO.File.Exists(file))
             {
                 System.IO.File.Delete(file);

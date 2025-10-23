@@ -1228,9 +1228,12 @@ namespace GRA.Controllers.MissionControl
                 ProgramImages = program.Images.ToList(),
                 MaxUploadMB = MaxUploadMB
             };
-            viewModel.ProgramImages.ForEach(_ => _.Filename = _pathResolver
-                .ResolveContentPath(_.Filename));
-
+            var siteId = GetCurrentSiteId();
+            viewModel.ProgramImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
             return View(viewModel);
         }
 
@@ -1290,8 +1293,13 @@ namespace GRA.Controllers.MissionControl
 
             model.ProgramName = program.Title;
             model.ProgramImages = program.Images.ToList();
-            model.ProgramImages.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(
-                _.Filename));
+            var siteId = GetCurrentSiteId();
+            model.ProgramImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
+                model.ProgramImages.First(p => p.Id == img.Id).Filename =
+                _pathResolver.ResolveContentPath(path);
+            });
             model.MaxUploadMB = MaxUploadMB;
 
             return View(model);
