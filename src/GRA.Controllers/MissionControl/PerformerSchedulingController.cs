@@ -664,10 +664,8 @@ namespace GRA.Controllers.MissionControl
 
             if (program.Images?.Count > 0)
             {
-                var siteId = GetCurrentSiteId();
-                var path = _performerSchedulingService
-                    .GetProgramImagePath(siteId, program.Images[0].Id);
-                viewModel.Image = _pathResolver.ResolveContentPath(path);
+                viewModel.Image = _pathResolver.ResolveContentPath(
+                    program.Images[0].Filename);
             }
 
             if (viewModel.SchedulingOpen)
@@ -750,13 +748,8 @@ namespace GRA.Controllers.MissionControl
                 return RedirectToAction(nameof(Programs));
             }
 
-            var siteId = GetCurrentSiteId();
-
-            program.Images.ForEach(img =>
-            {
-                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
-                img.Filename = _pathResolver.ResolveContentPath(path);
-            });
+            program.Images.ForEach(_ => _.Filename = _pathResolver
+                .ResolveContentPath(_.Filename));
 
             var viewModel = new ProgramImagesViewModel
             {
