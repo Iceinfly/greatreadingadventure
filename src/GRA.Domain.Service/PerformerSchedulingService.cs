@@ -316,7 +316,6 @@ namespace GRA.Domain.Service
             string fileExtension)
         {
             var authId = GetClaimId(ClaimType.UserId);
-
             var performer = await _psPerformerRepository.GetByIdAsync(performerId);
 
             if (!HasPermission(Permission.ManagePerformers)
@@ -331,31 +330,20 @@ namespace GRA.Domain.Service
 
             var siteId = GetCurrentSiteId();
 
-            var performerImageDirectory = _pathResolver.ResolveContentFilePath(
-                        Path.Combine($"site{siteId}", PerformerImagePath));
-            Directory.CreateDirectory(performerImageDirectory);
-
-            var performerFilename = AlphanumericRegex.Replace(performer.Name, "");
-            var imageFilename = $"{performerFilename}{fileExtension}";
-
-            while (System.IO.File.Exists(Path.Combine(performerImageDirectory, imageFilename)))
-            {
-                imageFilename = $"{performerFilename}" +
-                    $"_{Path.GetRandomFileName().Replace(".", "")}{fileExtension}";
-            }
-
-            var imagePath = Path.Combine($"site{siteId}", PerformerImagePath, imageFilename);
-            var filePath = _pathResolver.ResolveContentFilePath(imagePath);
-            System.IO.File.WriteAllBytes(filePath, imageBytes);
-
             var performerImage = new PsPerformerImage
             {
                 PerformerId = performer.Id,
-                Filename = imagePath
             };
 
-            await _psPerformerImageRepository.AddSaveAsync(GetClaimId(ClaimType.UserId),
+            performerImage = await _psPerformerImageRepository
+                .AddSaveAsync(GetClaimId(ClaimType.UserId),
                 performerImage);
+
+            var fullPath = GetPerformerImageFilePath(siteId, performerImage.Id);
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+
+            System.IO.File.WriteAllBytes(fullPath, imageBytes);
+
         }
 
         public async Task<PsProgram> AddProgramAsync(PsProgram program, List<int> ageSelection)
@@ -1003,6 +991,16 @@ namespace GRA.Domain.Service
                 date);
         }
 
+        public string GetPerformerImagePath(int siteId, int imageId)
+            => $"site{siteId}/{PerformerImagePath}/performerimage{imageId}.png";
+
+        private string GetPerformerImageFilePath(int siteId, int imageId)
+        {
+            var root = _pathResolver.ResolveContentFilePath();
+            var dir = Path.Combine(root, $"site{siteId}", PerformerImagePath);
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir, $"performerimage{imageId}.png");
+        }
         public async Task<List<int>> GetPerformerIndexListAsync(bool onlyApproved = false)
         {
             if (!HasPermission(Permission.ManagePerformers)
@@ -1874,13 +1872,11 @@ namespace GRA.Domain.Service
 
 
             var siteId = GetCurrentSiteId();
-            var root = _pathResolver.ResolveContentPath();
-            var path = Path.Combine(root, $"site{siteId}", ProgramImagePath);
-            var file = Path.Combine(path, $"programimage{image.Id}.png");
+            var fullPath = GetPerformerImageFilePath(siteId, image.Id);
 
-            if (System.IO.File.Exists(file))
+            if (System.IO.File.Exists(fullPath))
             {
-                System.IO.File.Delete(file);
+                System.IO.File.Delete(fullPath);
             }
         }
 

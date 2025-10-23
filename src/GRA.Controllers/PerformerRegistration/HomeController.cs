@@ -169,8 +169,13 @@ namespace GRA.Controllers.PerformerRegistration
                 return RedirectToAction(nameof(Information));
             }
 
+            var siteId = GetCurrentSiteId();
             var performerImages = performer.Images.ToList();
-            performerImages.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            performerImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             var viewModel = new PerformerImagesViewModel
             {
@@ -231,8 +236,14 @@ namespace GRA.Controllers.PerformerRegistration
                 return RedirectToAction(nameof(Images));
             }
 
+            var siteId = GetCurrentSiteId();
             var performerImages = performer.Images.ToList();
-            performerImages.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            performerImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
+
 
             model.IsEditable = schedulingStage == PsSchedulingStage.RegistrationOpen;
             model.MaxUploadMB = MaxUploadMB;

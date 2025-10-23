@@ -567,8 +567,12 @@ namespace GRA.Controllers.MissionControl
                 PerformerImages = performer.Images.ToList(),
                 MaxUploadMB = MaxUploadMB
             };
-            viewModel.PerformerImages.ForEach(_ => _.Filename =
-                _pathResolver.ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            viewModel.PerformerImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             return View(viewModel);
         }
@@ -627,8 +631,13 @@ namespace GRA.Controllers.MissionControl
                 return RedirectToAction(nameof(PerformerImages));
             }
 
+            var siteId = GetCurrentSiteId();
             var performerImages = performer.Images.ToList();
-            performerImages.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            performerImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             model.MaxUploadMB = MaxUploadMB;
             model.PerformerName = performer.Name;
