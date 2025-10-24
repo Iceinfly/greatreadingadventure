@@ -666,7 +666,7 @@ namespace GRA.Controllers.MissionControl
             {
                 var siteId = GetCurrentSiteId();
                 var path = _performerSchedulingService
-                    .GetProgramImagePath(siteId, program.Images[0].Id);
+                    .GetProgramImagePath(siteId, program.Images[0].Filename);
                 viewModel.Image = _pathResolver.ResolveContentPath(path);
             }
 
@@ -753,7 +753,7 @@ namespace GRA.Controllers.MissionControl
             var siteId = GetCurrentSiteId();
             program.Images.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 

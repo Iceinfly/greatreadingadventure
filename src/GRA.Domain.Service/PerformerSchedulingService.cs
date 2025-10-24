@@ -389,7 +389,7 @@ namespace GRA.Domain.Service
         }
 
         public async Task AddProgramImageAsync(int programId, byte[] imageBytes,
-            string fileExtension)
+            string originalFileName)
         {
             var authId = GetClaimId(ClaimType.UserId);
 
@@ -421,14 +421,27 @@ namespace GRA.Domain.Service
                 ProgramId = program.Id,
             };
 
-            programImage = await _psProgramImageRepository
-                .AddSaveAsync(GetClaimId(ClaimType.UserId),
+            programImage = await _psProgramImageRepository.AddSaveAsync(
+                GetClaimId(ClaimType.UserId),
                 programImage);
 
-            var fullPath = GetProgramImageFilePath(siteId, programImage.Id);
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            var fileName = SanitizeFileName(originalFileName);
+            var dir = Path.Combine(_pathResolver.ResolveContentFilePath(),
+                $"site{siteId}",
+                ProgramImagePath);
+
+            Directory.CreateDirectory(dir);
+
+            fileName = EnsureUniqueFileName(dir, fileName);
+
+            var fullPath = Path.Combine(dir, fileName);
 
             System.IO.File.WriteAllBytes(fullPath, imageBytes);
+
+            programImage.Filename = fileName;
+            
+            await _psProgramImageRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), 
+                programImage);
         }
 
         public async Task<bool> BranchAgeGroupAlreadySelectedAsync(int ageGroupId,
@@ -1131,16 +1144,16 @@ namespace GRA.Domain.Service
             return await _psProgramRepository.GetProgramCountAsync();
         }
 
-        private string GetProgramImageFilePath(int siteId, int imageId)
+        private string GetProgramImageFilePath(int siteId, string fileName)
         {
             var root = _pathResolver.ResolveContentPath();
             var dir = Path.Combine(root, $"site{siteId}", ProgramImagePath);
             Directory.CreateDirectory(dir);
-            return Path.Combine(dir, $"programimage{imageId}.png");
+            return Path.Combine(dir, fileName);
         }
 
-        public string GetProgramImagePath(int siteId, int imageId)
-            => $"site{siteId}/{ProgramImagePath}/programimage{imageId}.png";
+        public string GetProgramImagePath(int siteId, string fileName)
+            => $"site{siteId}/{ProgramImagePath}/{fileName}";
 
         public async Task<List<int>> GetProgramIndexListAsync(int? ageGroupId = null,
             bool onlyApproved = false)

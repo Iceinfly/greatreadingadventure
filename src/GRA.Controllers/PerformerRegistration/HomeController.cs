@@ -667,7 +667,7 @@ namespace GRA.Controllers.PerformerRegistration
                             using var ms = new MemoryStream();
                             fileStream.CopyTo(ms);
                             await _performerSchedulingService.AddProgramImageAsync(
-                                program.Id, ms.ToArray(), Path.GetExtension(image.FileName));
+                                program.Id, ms.ToArray(), image.FileName);
                         }
                     }
                 }
@@ -776,8 +776,11 @@ namespace GRA.Controllers.PerformerRegistration
 
             if (program.Images?.Count > 0)
             {
-                viewModel.Image = _pathResolver.ResolveContentPath(
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetProgramImagePath(
+                    siteId,
                     program.Images[0].Filename);
+                viewModel.Image = _pathResolver.ResolveContentPath(path);
             }
 
             return View(viewModel);
@@ -812,7 +815,12 @@ namespace GRA.Controllers.PerformerRegistration
                 return RedirectToAction(nameof(Dashboard));
             }
 
-            program.Images.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            program.Images.ForEach(_ =>
+            {
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, _.Filename);
+                _.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             var viewModel = new ProgramImagesViewModel
             {
@@ -868,7 +876,7 @@ namespace GRA.Controllers.PerformerRegistration
                     using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
                     await _performerSchedulingService.AddProgramImageAsync(
-                        model.ProgramId, ms.ToArray(), Path.GetExtension(image.FileName));
+                        model.ProgramId, ms.ToArray(), image.FileName);
                 }
                 ShowAlertSuccess("Image(s) added!");
                 return RedirectToAction(nameof(ProgramImages), new { id = model.ProgramId });

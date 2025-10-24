@@ -1005,7 +1005,10 @@ namespace GRA.Controllers.MissionControl
 
             if (program.Images?.Count > 0)
             {
-                viewModel.Image = _pathResolver.ResolveContentPath(program.Images[0].Filename);
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetProgramImagePath(siteId,
+                    program.Images[0].Filename);
+                viewModel.Image = _pathResolver.ResolveContentPath(path);
             }
 
             return View(viewModel);
@@ -1179,7 +1182,7 @@ namespace GRA.Controllers.MissionControl
                                 using var ms = new MemoryStream();
                                 fileStream.CopyTo(ms);
                                 await _performerSchedulingService.AddProgramImageAsync(
-                                    program.Id, ms.ToArray(), Path.GetExtension(image.FileName));
+                                    program.Id, ms.ToArray(), image.FileName);
                             }
                         }
                         ShowAlertSuccess($"Program \"{program.Title}\" added!");
@@ -1246,7 +1249,7 @@ namespace GRA.Controllers.MissionControl
             var siteId = GetCurrentSiteId();
             viewModel.ProgramImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
             return View(viewModel);
@@ -1288,7 +1291,7 @@ namespace GRA.Controllers.MissionControl
                     using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
                     await _performerSchedulingService.AddProgramImageAsync(
-                        model.ProgramId, ms.ToArray(), Path.GetExtension(image.FileName));
+                        model.ProgramId, ms.ToArray(), image.FileName);
                 }
                 ShowAlertSuccess("Image(s) added!");
                 return RedirectToAction(nameof(ProgramImages), new { id = model.ProgramId });
@@ -1311,7 +1314,7 @@ namespace GRA.Controllers.MissionControl
             var siteId = GetCurrentSiteId();
             model.ProgramImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetProgramImagePath(siteId, img.Filename);
                 model.ProgramImages.First(p => p.Id == img.Id).Filename =
                 _pathResolver.ResolveContentPath(path);
             });
