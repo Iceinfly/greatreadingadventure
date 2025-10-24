@@ -257,7 +257,7 @@ namespace GRA.Domain.Service
         }
 
         public async Task AddKitImageAsync(int kitId, byte[] imageBytes,
-            string fileExtension)
+            string originalFileName)
         {
             VerifyManagementPermission();
             var siteId = GetCurrentSiteId();
@@ -270,10 +270,15 @@ namespace GRA.Domain.Service
             kitImage = await _psKitImageRepository.AddSaveAsync(
                 GetClaimId(ClaimType.UserId), kitImage);
 
-            var fullPath = GetKitImageFilePath(siteId, kitImage.Id);
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            var ext = Path.GetExtension(originalFileName);
+            var fullPath = GetKitImageFilePath(siteId, kitImage.Id, ext);
 
+            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
             File.WriteAllBytes(fullPath, imageBytes);
+
+            kitImage.Filename = Path.GetFileName(originalFileName);
+
+            await _psKitImageRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), kitImage);
         }
 
         public async Task<PsPerformer> AddPerformerAsync(PsPerformer performer,
@@ -727,15 +732,15 @@ namespace GRA.Domain.Service
             return await _psKitRepository.GetKitCountAsync();
         }
 
-        public string GetKitImagePath(int siteId, int imageId)
-            => $"site{siteId}/{KitImagePath}/kitimage{imageId}.png";
+        public string GetKitImagePath(int siteId, int imageId, string ext)
+            => $"site{siteId}/{KitImagePath}/kitimage{imageId}{NormalizeImageExtension(ext)}";
 
-        private string GetKitImageFilePath(int siteId, int imageId)
+        private string GetKitImageFilePath(int siteId, int imageId, string ext)
         {
             var root = _pathResolver.ResolveContentFilePath();
             var dir = Path.Combine(root, $"site{siteId}", KitImagePath);
             Directory.CreateDirectory(dir);
-            return Path.Combine(dir, $"kitimage{imageId}.png");
+            return Path.Combine(dir, $"kitimage{imageId}{NormalizeImageExtension(ext)}");
         }
 
         public async Task<List<int>> GetKitIndexListAsync()
@@ -1235,6 +1240,16 @@ namespace GRA.Domain.Service
                 .GetNonExcludedSystemBranchesAsync(systemId);
 
             return system;
+        }
+
+        private static string NormalizeImageExtension(string ext)
+        {
+            ext = (ext ?? ".png").Trim().ToLowerInvariant();
+            if (ext == ".jpeg")
+            {
+                return ".jpg";
+            }
+            return ext is ".png" or ".jpg" or ".gif" ? ext : "png";
         }
 
         public async Task<bool> ProgramAvailableAtBranchAsync(int programId, int branchId)
