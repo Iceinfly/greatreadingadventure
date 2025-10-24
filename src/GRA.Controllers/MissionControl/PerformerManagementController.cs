@@ -570,7 +570,9 @@ namespace GRA.Controllers.MissionControl
             var siteId = GetCurrentSiteId();
             viewModel.PerformerImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetPerformerImagePath(
+                    siteId, 
+                    img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 
@@ -625,7 +627,7 @@ namespace GRA.Controllers.MissionControl
                     using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
                     await _performerSchedulingService.AddPerformerImageAsync(
-                        model.PerformerId, ms.ToArray(), Path.GetExtension(image.FileName));
+                        model.PerformerId, ms.ToArray(), image.FileName);
                 }
                 ShowAlertSuccess("Image(s) added!");
                 return RedirectToAction(nameof(PerformerImages));
@@ -635,7 +637,9 @@ namespace GRA.Controllers.MissionControl
             var performerImages = performer.Images.ToList();
             performerImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetPerformerImagePath(
+                    siteId,
+                    img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 
@@ -1694,8 +1698,7 @@ namespace GRA.Controllers.MissionControl
                 var siteId = GetCurrentSiteId();
                 var path = _performerSchedulingService.GetKitImagePath(
                     siteId, 
-                    kit.Images[0].Id,
-                    Path.GetExtension(kit.Images[0].Filename));
+                    kit.Images[0].Filename);
                 kit.Images[0].Filename = _pathResolver.ResolveContentPath(path);
             }
 
@@ -1922,9 +1925,7 @@ namespace GRA.Controllers.MissionControl
             {
                 var path = _performerSchedulingService.GetKitImagePath(
                     siteId,
-                    img.Id,
-                    Path.GetExtension(img.Filename)
-                    );
+                    img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 
@@ -1979,14 +1980,19 @@ namespace GRA.Controllers.MissionControl
                     using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
                     await _performerSchedulingService.AddKitImageAsync(
-                        kit.Id, ms.ToArray(), Path.GetExtension(image.FileName));
+                        kit.Id, ms.ToArray(), image.FileName);
                 }
                 ShowAlertSuccess("Image(s) added!");
                 return RedirectToAction(nameof(KitImages));
             }
 
             var kitImages = kit.Images.ToList();
-            kitImages.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            kitImages.ForEach(img =>
+            {
+                var path = _performerSchedulingService.GetKitImagePath(siteId, img.Filename);
+                img.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             model.KitName = kit.Name;
             model.KitImages = kitImages;

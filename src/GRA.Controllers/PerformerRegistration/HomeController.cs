@@ -173,7 +173,9 @@ namespace GRA.Controllers.PerformerRegistration
             var performerImages = performer.Images.ToList();
             performerImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetPerformerImagePath(
+                    siteId,
+                    img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 
@@ -230,7 +232,7 @@ namespace GRA.Controllers.PerformerRegistration
                     using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
                     await _performerSchedulingService.AddPerformerImageAsync(
-                        performer.Id, ms.ToArray(), Path.GetExtension(image.FileName));
+                        performer.Id, ms.ToArray(), image.FileName);
                 }
                 ShowAlertSuccess("Image(s) added!");
                 return RedirectToAction(nameof(Images));
@@ -240,7 +242,9 @@ namespace GRA.Controllers.PerformerRegistration
             var performerImages = performer.Images.ToList();
             performerImages.ForEach(img =>
             {
-                var path = _performerSchedulingService.GetPerformerImagePath(siteId, img.Id);
+                var path = _performerSchedulingService.GetPerformerImagePath(
+                    siteId, 
+                    img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
 
@@ -493,7 +497,7 @@ namespace GRA.Controllers.PerformerRegistration
                         using var ms = new MemoryStream();
                         fileStream.CopyTo(ms);
                         await _performerSchedulingService.AddPerformerImageAsync(
-                            performer.Id, ms.ToArray(), Path.GetExtension(image.FileName));
+                            performer.Id, ms.ToArray(), image.FileName);
                     }
 
                     return RedirectToAction(nameof(Schedule));

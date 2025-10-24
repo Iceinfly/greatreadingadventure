@@ -270,13 +270,18 @@ namespace GRA.Domain.Service
             kitImage = await _psKitImageRepository.AddSaveAsync(
                 GetClaimId(ClaimType.UserId), kitImage);
 
-            var ext = Path.GetExtension(originalFileName);
-            var fullPath = GetKitImageFilePath(siteId, kitImage.Id, ext);
+            var fileName = SanitizeFileName(originalFileName);
+            var dir = Path.GetDirectoryName(GetKitImageFilePath(siteId, "placehoder"))!;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            File.WriteAllBytes(fullPath, imageBytes);
+            Directory.CreateDirectory(dir);
 
-            kitImage.Filename = Path.GetFileName(originalFileName);
+            fileName = EnsureUniqueFileName(dir, fileName);
+
+            var fullPath = Path.Combine(dir, fileName);
+
+            System.IO.File.WriteAllBytes(fullPath, imageBytes);
+
+            kitImage.Filename = fileName;
 
             await _psKitImageRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), kitImage);
         }
@@ -318,7 +323,7 @@ namespace GRA.Domain.Service
         }
 
         public async Task AddPerformerImageAsync(int performerId, byte[] imageBytes,
-            string fileExtension)
+            string originalFileName)
         {
             var authId = GetClaimId(ClaimType.UserId);
             var performer = await _psPerformerRepository.GetByIdAsync(performerId);
@@ -344,11 +349,21 @@ namespace GRA.Domain.Service
                 .AddSaveAsync(GetClaimId(ClaimType.UserId),
                 performerImage);
 
-            var fullPath = GetPerformerImageFilePath(siteId, performerImage.Id);
-            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            var fileName = SanitizeFileName(originalFileName);
+
+            var dir = Path.GetDirectoryName(GetPerformerImageFilePath(siteId, "placeholder"));
+            Directory.CreateDirectory(dir);
+
+            fileName = EnsureUniqueFileName(dir, fileName);
+
+            var fullPath = Path.Combine(dir, fileName);
 
             System.IO.File.WriteAllBytes(fullPath, imageBytes);
 
+            performerImage.Filename = fileName;
+
+            await _psPerformerImageRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), 
+                performerImage);
         }
 
         public async Task<PsProgram> AddProgramAsync(PsProgram program, List<int> ageSelection)
@@ -607,6 +622,21 @@ namespace GRA.Domain.Service
             }
         }
 
+        private static string EnsureUniqueFileName(string dir, string fileName)
+        {
+            var name = Path.GetFileNameWithoutExtension(fileName);
+            var ext = Path.GetExtension(fileName);
+            var path = Path.Combine(dir, fileName);
+            int i = 1;
+            while (System.IO.File.Exists(path))
+            {
+                var newName = $"{name} ({i}){ext}";
+                path = Path.Combine(dir, newName);
+                i++;
+            }
+
+            return Path.GetFileName(path);
+        }
         public async Task<ICollection<int>> GetAgeGroupBacktoBackBranchIdsAsync(int ageGroupId)
         {
             VerifyManagementPermission();
@@ -732,15 +762,15 @@ namespace GRA.Domain.Service
             return await _psKitRepository.GetKitCountAsync();
         }
 
-        public string GetKitImagePath(int siteId, int imageId, string ext)
-            => $"site{siteId}/{KitImagePath}/kitimage{imageId}{NormalizeImageExtension(ext)}";
+        public string GetKitImagePath(int siteId, string fileName)
+            => $"site{siteId}/{KitImagePath}/{fileName}";
 
-        private string GetKitImageFilePath(int siteId, int imageId, string ext)
+        private string GetKitImageFilePath(int siteId, string fileName)
         {
             var root = _pathResolver.ResolveContentFilePath();
             var dir = Path.Combine(root, $"site{siteId}", KitImagePath);
             Directory.CreateDirectory(dir);
-            return Path.Combine(dir, $"kitimage{imageId}{NormalizeImageExtension(ext)}");
+            return Path.Combine(dir, fileName);
         }
 
         public async Task<List<int>> GetKitIndexListAsync()
@@ -996,15 +1026,15 @@ namespace GRA.Domain.Service
                 date);
         }
 
-        public string GetPerformerImagePath(int siteId, int imageId)
-            => $"site{siteId}/{PerformerImagePath}/performerimage{imageId}.png";
+        public string GetPerformerImagePath(int siteId, string fileName)
+            => $"site{siteId}/{PerformerImagePath}/{fileName}";
 
-        private string GetPerformerImageFilePath(int siteId, int imageId)
+        private string GetPerformerImageFilePath(int siteId, string fileName)
         {
             var root = _pathResolver.ResolveContentFilePath();
             var dir = Path.Combine(root, $"site{siteId}", PerformerImagePath);
             Directory.CreateDirectory(dir);
-            return Path.Combine(dir, $"performerimage{imageId}.png");
+            return Path.Combine(dir, fileName);
         }
         public async Task<List<int>> GetPerformerIndexListAsync(bool onlyApproved = false)
         {
@@ -1242,16 +1272,6 @@ namespace GRA.Domain.Service
             return system;
         }
 
-        private static string NormalizeImageExtension(string ext)
-        {
-            ext = (ext ?? ".png").Trim().ToLowerInvariant();
-            if (ext == ".jpeg")
-            {
-                return ".jpg";
-            }
-            return ext is ".png" or ".jpg" or ".gif" ? ext : "png";
-        }
-
         public async Task<bool> ProgramAvailableAtBranchAsync(int programId, int branchId)
         {
             if (!HasPermission(Permission.ManagePerformers)
@@ -1424,6 +1444,16 @@ namespace GRA.Domain.Service
             }
 
             await RemoveProgramImageAsync(image);
+        }
+
+        private static string SanitizeFileName(string name)
+        {
+            var onlyName = Path.GetFileName(name ?? "image.png");
+            foreach (var c in Path.GetInvalidFileNameChars())
+            {
+                onlyName = onlyName.Replace(c, '_');
+            }
+            return onlyName.Length > 128 ? onlyName[^128..] : onlyName;
         }
 
         public async Task SetPerformerApprovedAsync(int performerId, bool isApproved)
@@ -1887,7 +1917,9 @@ namespace GRA.Domain.Service
 
 
             var siteId = GetCurrentSiteId();
-            var fullPath = GetPerformerImageFilePath(siteId, image.Id);
+            var fullPath = GetPerformerImageFilePath(
+                siteId, 
+                image.Filename);
 
             if (System.IO.File.Exists(fullPath))
             {
