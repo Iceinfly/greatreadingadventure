@@ -344,8 +344,10 @@ namespace GRA.Controllers.MissionControl
 
             if (performer.Images.Count > 0)
             {
-                viewModel.ImagePath = _pathResolver.ResolveContentPath(
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId,
                     performer.Images[0].Filename);
+                viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }
 
             if (!string.IsNullOrWhiteSpace(performer.Website)
