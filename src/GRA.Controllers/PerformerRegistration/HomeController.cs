@@ -894,7 +894,13 @@ namespace GRA.Controllers.PerformerRegistration
                 return RedirectToAction(nameof(Index));
             }
 
-            program.Images.ForEach(_ => _.Filename = _pathResolver.ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            program.Images.ForEach(_ =>
+            {
+                var path = _performerSchedulingService.GetProgramImagePath(siteId,
+                    _.Filename);
+                _.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             model.IsEditable = schedulingStage == PsSchedulingStage.RegistrationOpen;
             model.MaxUploadMB = MaxUploadMB;

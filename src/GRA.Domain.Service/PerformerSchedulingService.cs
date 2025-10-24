@@ -271,7 +271,7 @@ namespace GRA.Domain.Service
                 GetClaimId(ClaimType.UserId), kitImage);
 
             var fileName = SanitizeFileName(originalFileName);
-            var dir = Path.GetDirectoryName(GetKitImageFilePath(siteId, "placehoder"))!;
+            var dir = Path.GetDirectoryName(GetKitImageFilePath(siteId, "placeholder"))!;
 
             Directory.CreateDirectory(dir);
 
@@ -1146,7 +1146,7 @@ namespace GRA.Domain.Service
 
         private string GetProgramImageFilePath(int siteId, string fileName)
         {
-            var root = _pathResolver.ResolveContentPath();
+            var root = _pathResolver.ResolveContentFilePath();
             var dir = Path.Combine(root, $"site{siteId}", ProgramImagePath);
             Directory.CreateDirectory(dir);
             return Path.Combine(dir, fileName);
@@ -1913,9 +1913,7 @@ namespace GRA.Domain.Service
             await _psKitImageRepository.RemoveSaveAsync(authId, image.Id);
 
             var siteId = GetCurrentSiteId();
-            var root = _pathResolver.ResolveContentFilePath();
-            var path = Path.Combine(root, $"site{siteId}", KitImagePath);
-            var file = Path.Combine(path, $"kitimage{image.Id}.png");
+            var file = GetKitImageFilePath(siteId, image.Filename);
 
             if (System.IO.File.Exists(file))
             {
@@ -1945,7 +1943,9 @@ namespace GRA.Domain.Service
             var authId = GetClaimId(ClaimType.UserId);
 
             await _psProgramImageRepository.RemoveSaveAsync(authId, image.Id);
-            var file = _pathResolver.ResolveContentFilePath(image.Filename);
+
+            var siteId = GetCurrentSiteId();
+            var file = GetProgramImageFilePath(siteId, image.Filename);
             if (System.IO.File.Exists(file))
             {
                 System.IO.File.Delete(file);

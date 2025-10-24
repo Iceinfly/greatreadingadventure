@@ -342,8 +342,10 @@ namespace GRA.Controllers.MissionControl
 
             if (kit.Images.Count > 0)
             {
-                viewModel.ImagePath = _pathResolver.ResolveContentPath(
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetKitImagePath(siteId, 
                     kit.Images[0].Filename);
+                viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }
 
             if (!string.IsNullOrWhiteSpace(kit.Website)
@@ -420,8 +422,12 @@ namespace GRA.Controllers.MissionControl
                 return RedirectToAction(nameof(Kits));
             }
 
-            kit.Images.ForEach(_ => _.Filename = _pathResolver
-               .ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            kit.Images.ForEach(_ =>
+            {
+                var path = _performerSchedulingService.GetKitImagePath(siteId, _.Filename);
+                _.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             return View(kit);
         }
@@ -511,8 +517,10 @@ namespace GRA.Controllers.MissionControl
 
             if (performer.Images.Count > 0)
             {
-                viewModel.ImagePath = _pathResolver.ResolveContentPath(
+                var siteId = GetCurrentSiteId();
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId,
                     performer.Images[0].Filename);
+                viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }
 
             if (!string.IsNullOrWhiteSpace(performer.Website)
@@ -559,8 +567,13 @@ namespace GRA.Controllers.MissionControl
                 return RedirectToAction(nameof(Performers));
             }
 
-            performer.Images.ForEach(_ => _.Filename = _pathResolver
-                .ResolveContentPath(_.Filename));
+            var siteId = GetCurrentSiteId();
+            performer.Images.ForEach(_ =>
+            {
+                var path = _performerSchedulingService.GetPerformerImagePath(siteId,
+                    _.Filename);
+                _.Filename = _pathResolver.ResolveContentPath(path);
+            });
 
             return View(performer);
         }
