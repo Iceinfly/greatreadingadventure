@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper.QueryableExtensions;
 using GRA.Abstract;
 using GRA.Domain.Model;
 using GRA.Domain.Repository;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -17,7 +17,7 @@ namespace GRA.Data.Repository
         private readonly Context _context;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IEntitySerializer _entitySerializer;
-        private readonly AutoMapper.IMapper _mapper;
+        private readonly MapsterMapper.IMapper _mapper;
         private DbSet<Model.Social> _dbSet;
 
         public SocialRepository(ServiceFacade.Repository repositoryFacade)
@@ -65,7 +65,7 @@ namespace GRA.Data.Repository
             return await DbSet
                 .AsNoTracking()
                 .Where(_ => headerIds.Contains(_.SocialHeaderId))
-                .ProjectTo<Social>(_mapper.ConfigurationProvider)
+                .ProjectToType<Social>()
                 .ToListAsync();
         }
 
@@ -74,7 +74,7 @@ namespace GRA.Data.Repository
             return await DbSet
                 .AsNoTracking()
                 .Where(_ => _.SocialHeaderId == headerId && _.LanguageId == languageId)
-                .ProjectTo<Social>(_mapper.ConfigurationProvider)
+                .ProjectToType<Social>()
                 .SingleOrDefaultAsync();
         }
 

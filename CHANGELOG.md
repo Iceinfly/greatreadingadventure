@@ -4,11 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## [4.6.0] 2024-10-09
+## [Unreleased]
+
+## Added
+
+- Alt texts to avatar color, item and layer selector images
+- Mission Control interface to set avatar color and item alt texts
+- BranchId token to vendor code URLs
+- Setting performer programs to be unapproved
+- Performer field for contact name
+- Performer scheduling settings for cover sheet fields
+- View of and access to historical report output
+- QR code generation ability
+- Spanish localization for jQuery validation messages
+
+## Changed
+
+- Update packages
+- Update Docker lock checksums
+- Performer references to be a text input instead of file
+- Update front-end packages
+- Add achiever column to badge report
 
 ## Fixed
 
 - Display of modals after Bootstrap 5.3 upgrade
+- Performer program cost to display in currency format
 
 ## [4.6.0] 2024-10-09
 
@@ -40,6 +61,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Add tracking of packing list viewing
 - Move exit and landing page messages to database
 - Remove references to ValueTuple
+- Replace AutoMapper with Mapster
 
 ### Fixed
 

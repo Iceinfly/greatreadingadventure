@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper.QueryableExtensions;
 using GRA.Domain.Model;
 using GRA.Domain.Model.Filters;
 using GRA.Domain.Repository;
 using GRA.Domain.Repository.Extensions;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -27,11 +27,15 @@ namespace GRA.Data.Repository
 
             if (onlyApproved)
             {
-                performer = performer.Where(_ => _.IsApproved);
+                performer = performer
+                    .Where(_ => _.IsApproved 
+                        && _context.PsPrograms
+                            .Where(p => p.IsApproved)
+                            .Any(p => p.PerformerId == _.Id));
             }
 
             return await performer
-                .ProjectTo<PsPerformer>(_mapper.ConfigurationProvider)
+                .ProjectToType<PsPerformer>()
                 .FirstOrDefaultAsync();
         }
 
@@ -40,7 +44,7 @@ namespace GRA.Data.Repository
             return await DbSet
                 .AsNoTracking()
                 .Where(_ => _.UserId == userId)
-                .ProjectTo<PsPerformer>(_mapper.ConfigurationProvider)
+                .ProjectToType<PsPerformer>()
                 .SingleOrDefaultAsync();
         }
 
@@ -51,7 +55,11 @@ namespace GRA.Data.Repository
 
             if (filter.IsApproved.HasValue)
             {
-                performers = performers.Where(_ => _.IsApproved == filter.IsApproved);
+                performers = performers
+                    .Where(_ => _.IsApproved == filter.IsApproved
+                        && _context.PsPrograms
+                            .Where(p => p.IsApproved == filter.IsApproved)
+                            .Any(p => p.PerformerId == _.Id));
             }
 
             var count = await performers.CountAsync();
@@ -59,7 +67,7 @@ namespace GRA.Data.Repository
             var performerList = await performers
                 .OrderBy(_ => _.Name)
                 .ApplyPagination(filter)
-                .ProjectTo<PsPerformer>(_mapper.ConfigurationProvider)
+                .ProjectToType<PsPerformer>()
                 .ToListAsync();
 
             return new DataWithCount<ICollection<PsPerformer>>
@@ -76,7 +84,11 @@ namespace GRA.Data.Repository
 
             if (onlyApproved)
             {
-                performers = performers.Where(_ => _.IsApproved);
+                performers = performers
+                    .Where(_ => _.IsApproved
+                        && _context.PsPrograms
+                            .Where(p => p.IsApproved)
+                            .Any(p => p.PerformerId == _.Id));
             }
 
             return await performers
@@ -89,7 +101,7 @@ namespace GRA.Data.Repository
         {
             return await DbSet
                 .AsNoTracking()
-                .ProjectTo<PsPerformer>(_mapper.ConfigurationProvider)
+                .ProjectToType<PsPerformer>()
                 .ToListAsync();
         }
 
@@ -104,7 +116,7 @@ namespace GRA.Data.Repository
                     (_, ageGroups) => ageGroups)
                 .Select(_ => _.AgeGroup)
                 .Distinct()
-                .ProjectTo<PsAgeGroup>(_mapper.ConfigurationProvider)
+                .ProjectToType<PsAgeGroup>()
                 .ToListAsync();
         }
 
@@ -114,7 +126,7 @@ namespace GRA.Data.Repository
                 .AsNoTracking()
                 .Where(_ => _.PsPerformerId == performerId)
                 .Select(_ => _.Branch)
-                .ProjectTo<Branch>(_mapper.ConfigurationProvider)
+                .ProjectToType<Branch>()
                 .ToListAsync();
         }
 

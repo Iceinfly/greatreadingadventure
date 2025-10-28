@@ -18,7 +18,6 @@ namespace GRA.Domain.Service
         public static readonly string KitImagePath = "kitimages";
         public static readonly string PerformerImagePath = "performerimages";
         public static readonly string ProgramImagePath = "programimages";
-        public static readonly string ReferencesPath = "performerreferences";
         private static readonly Regex AlphanumericRegex = new("[^a-zA-Z0-9 -]");
         private readonly IPathResolver _pathResolver;
         private readonly IPsAgeGroupRepository _psAgeGroupRepository;
@@ -305,8 +304,10 @@ namespace GRA.Domain.Service
             }
 
             performer.BillingAddress = performer.BillingAddress.Trim();
+            performer.ContactName = performer.ContactName.Trim();
             performer.Name = performer.Name.Trim();
             performer.Phone = performer.Phone.Trim();
+            performer.References = performer.References.Trim();
             performer.UserId = authId;
             performer.VendorId = performer.VendorId.Trim();
             performer.Website = performer.Website?.Trim();
@@ -373,11 +374,13 @@ namespace GRA.Domain.Service
             if (!HasPermission(Permission.ManagePerformers)
                 && !HasPermission(Permission.AccessPerformerRegistration))
             {
-                _logger.LogError("User id {AuthId} does not have persmission to add program.", authId);
+                _logger.LogError("User id {AuthId} does not have permission to add program.",
+                    authId);
                 throw new GraException("Permission denied.");
             }
             ArgumentNullException.ThrowIfNull(program);
             program.Description = program.Description?.Trim();
+            program.IsApproved = true;
             program.Setup = program.Setup?.Trim();
             program.Title = program.Title?.Trim();
 
@@ -402,7 +405,7 @@ namespace GRA.Domain.Service
                 if (performer.UserId != authId
                     || !HasPermission(Permission.AccessPerformerRegistration))
                 {
-                    _logger.LogError("User id {AuthId} does not have persmission to add program {ProgramId} image.",
+                    _logger.LogError("User id {AuthId} does not have permission to add program {ProgramId} image.",
                         authId,
                         programId);
                     throw new GraException("Permission denied.");
@@ -493,7 +496,8 @@ namespace GRA.Domain.Service
                 ?? throw new GraException("The requested performer could not be accessed or does not exist.");
 
             if (!HasPermission(Permission.ManagePerformers)
-                && (currentPerformer.UserId != authId || !HasPermission(Permission.AccessPerformerRegistration)))
+                && (currentPerformer.UserId != authId
+                    || !HasPermission(Permission.AccessPerformerRegistration)))
             {
                 _logger.LogError("User {AuthId} doesn't have permission to edit performer {PerformerId}.",
                     authId,
@@ -502,12 +506,14 @@ namespace GRA.Domain.Service
             }
 
             currentPerformer.BillingAddress = performer.BillingAddress.Trim();
+            currentPerformer.ContactName = performer.ContactName.Trim();
             currentPerformer.HasFingerprintCard = performer.HasFingerprintCard;
             currentPerformer.HasInsurance = performer.HasInsurance;
             currentPerformer.Name = performer.Name.Trim();
             currentPerformer.Email = performer.Email.Trim();
             currentPerformer.Phone = performer.Phone.Trim();
             currentPerformer.PhonePreferred = performer.PhonePreferred;
+            currentPerformer.References = performer.References.Trim();
             currentPerformer.VendorId = performer.VendorId.Trim();
             currentPerformer.Website = performer.Website?.Trim();
 
@@ -719,7 +725,8 @@ namespace GRA.Domain.Service
             return await _psBranchSelectionRepository.GetByIdAsync(id);
         }
 
-        public async Task<ICollection<PsBranchSelection>> GetBranchProgramSelectionsByPerformerAsync(int performerId)
+        public async Task<ICollection<PsBranchSelection>>
+            GetBranchProgramSelectionsByPerformerAsync(int performerId)
         {
             return await _psBranchSelectionRepository.GetByPerformerIdAsync(performerId);
         }
@@ -966,7 +973,7 @@ namespace GRA.Domain.Service
             if (includePrograms)
             {
                 performer.Programs = await _psProgramRepository.GetByPerformerIdAsync(
-                    performer.Id);
+                    performer.Id, onlyApproved);
             }
             if (includeSchedule)
             {
@@ -1008,7 +1015,7 @@ namespace GRA.Domain.Service
                 if (includePrograms)
                 {
                     performer.Programs = await _psProgramRepository.GetByPerformerIdAsync(
-                        performer.Id);
+                        performer.Id, false);
                 }
                 if (includeSchedule)
                 {
@@ -1061,7 +1068,8 @@ namespace GRA.Domain.Service
             return await _psPerformerRepository.GetIndexListAsync(onlyApproved);
         }
 
-        public async Task<int> GetPerformerProgramCountAsync(int performerId)
+        public async Task<int> GetPerformerProgramCountAsync(int performerId, 
+            bool onlyApproved = false)
         {
             if (!HasPermission(Permission.ManagePerformers)
                 && !HasPermission(Permission.ViewPerformerDetails))
@@ -1070,7 +1078,7 @@ namespace GRA.Domain.Service
                     GetClaimId(ClaimType.UserId));
                 throw new GraException("Permission denied.");
             }
-            return await _psProgramRepository.GetCountByPerformerAsync(performerId);
+            return await _psProgramRepository.GetCountByPerformerAsync(performerId, onlyApproved);
         }
 
         public async Task<ICollection<PsPerformerSchedule>> GetPerformerScheduleAsync(
@@ -1120,7 +1128,7 @@ namespace GRA.Domain.Service
                 if (performer.UserId != authId
                     || !HasPermission(Permission.AccessPerformerRegistration))
                 {
-                    _logger.LogError("User id {AuthId} does not have persmission to view program {Id}.",
+                    _logger.LogError("User id {AuthId} does not have permission to view program {Id}.",
                         authId,
                         id);
                     throw new GraException("Permission denied.");
@@ -1356,7 +1364,8 @@ namespace GRA.Domain.Service
                 await RemovePerformerImageAsync(image);
             }
 
-            var performerPrograms = await _psProgramRepository.GetByPerformerIdAsync(performer.Id);
+            var performerPrograms = await _psProgramRepository
+                .GetByPerformerIdAsync(performer.Id, false);
             foreach (var program in performerPrograms)
             {
                 await RemoveProgramAsync(program.Id);
@@ -1364,12 +1373,6 @@ namespace GRA.Domain.Service
 
             await _psPerformerScheduleRepository.RemovePerformerScheduleAsync(performer.Id);
             await _psPerformerRepository.RemovePerformerBranchesAsync(performer.Id);
-
-            var referencesFile = _pathResolver.ResolveContentFilePath(performer.ReferencesFilename);
-            if (System.IO.File.Exists(referencesFile))
-            {
-                System.IO.File.Delete(referencesFile);
-            }
 
             await _psPerformerRepository.RemoveSaveAsync(GetClaimId(ClaimType.UserId), performer.Id);
         }
@@ -1416,7 +1419,7 @@ namespace GRA.Domain.Service
                 if (performer.UserId != authId
                     || !HasPermission(Permission.AccessPerformerRegistration))
                 {
-                    _logger.LogError("User id {AuthId} does not have persmission to remove program {ProgramId}.",
+                    _logger.LogError("User id {AuthId} does not have permission to remove program {ProgramId}.",
                         authId,
                         programId);
                     throw new GraException("Permission denied.");
@@ -1480,61 +1483,6 @@ namespace GRA.Domain.Service
             await _psPerformerRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), performer);
         }
 
-        public async Task SetPerformerReferencesAsync(int performerId,
-            byte[] referencesBytes,
-            string fileExtension)
-        {
-            var authId = GetClaimId(ClaimType.UserId);
-
-            var performer = await _psPerformerRepository.GetByIdAsync(performerId);
-
-            if (!HasPermission(Permission.ManagePerformers)
-                && (performer.UserId != authId
-                || !HasPermission(Permission.AccessPerformerRegistration)))
-            {
-                _logger.LogError("User {authId} doesn't have permission to set performer {performerId} references.",
-                    authId,
-                    performer.Id);
-                throw new GraException("Permission denied.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(performer.ReferencesFilename))
-            {
-                var filePath = _pathResolver.ResolveContentFilePath(performer.ReferencesFilename);
-                await File.WriteAllBytesAsync(filePath, referencesBytes);
-            }
-            else
-            {
-                var siteId = GetCurrentSiteId();
-
-                var referencesDirectory = _pathResolver.ResolveContentFilePath(
-                        Path.Combine($"site{siteId}", ReferencesPath));
-                Directory.CreateDirectory(referencesDirectory);
-
-                var performerFilename = AlphanumericRegex.Replace(performer.Name, "");
-                var referencesFilename = $"{performerFilename}_references{fileExtension}";
-
-                while (File.Exists(Path.Combine(referencesDirectory, referencesFilename)))
-                {
-                    var randomFilename = Path.GetRandomFileName().Replace(".",
-                        "",
-                        StringComparison.OrdinalIgnoreCase);
-                    referencesFilename = $"{performerFilename}_references" +
-                        $"_{randomFilename}{fileExtension}";
-                }
-
-                performer.ReferencesFilename = Path.Combine($"site{siteId}",
-                    ReferencesPath,
-                    referencesFilename);
-
-                var filePath = _pathResolver.ResolveContentFilePath(performer.ReferencesFilename);
-                await File.WriteAllBytesAsync(filePath, referencesBytes);
-
-                await _psPerformerRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId),
-                    performer);
-            }
-        }
-
         public async Task SetPerformerRegistrationCompeltedAsync(int performerId)
         {
             var authId = GetClaimId(ClaimType.UserId);
@@ -1553,6 +1501,17 @@ namespace GRA.Domain.Service
 
             performer.RegistrationCompleted = true;
             await _psPerformerRepository.UpdateSaveAsync(authId, performer);
+        }
+
+        public async Task SetProgramApprovedAsync (int programId, bool isApproved)
+        {
+            VerifyManagementPermission();
+
+            var program = await _psProgramRepository.GetByIdAsync(programId)
+                ?? throw new GraException("The requested program could not be accessed or does not exist.");
+            program.IsApproved = isApproved;
+
+            await _psProgramRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), program);
         }
 
         public async Task SetSelectionSecretCodeAsync(int selectionId, string secretCode)
@@ -1755,7 +1714,7 @@ namespace GRA.Domain.Service
                 if (performer.UserId != authId
                     || !HasPermission(Permission.AccessPerformerRegistration))
                 {
-                    _logger.LogError("User id {AuthId} does not have persmission to edit program {ProgramId}.",
+                    _logger.LogError("User id {AuthId} does not have permission to edit program {ProgramId}.",
                         authId,
                         currentProgram.Id);
                     throw new GraException("Permission denied.");
@@ -1812,7 +1771,9 @@ namespace GRA.Domain.Service
             {
                 currentSettings.BranchAvailabilitySupplementalText = settings
                     .BranchAvailabilitySupplementalText;
-                currentSettings.ContactEmail = settings.ContactEmail;
+                currentSettings.ContactEmail = settings.ContactEmail?.Trim();
+                currentSettings.CoverSheetBranch = settings.CoverSheetBranch?.Trim();
+                currentSettings.CoverSheetContact = settings.CoverSheetContact?.Trim();
                 currentSettings.SelectionsPerBranch = settings.SelectionsPerBranch;
                 currentSettings.RegistrationOpen = settings.RegistrationOpen;
                 currentSettings.RegistrationClosed = settings.RegistrationClosed;
@@ -1822,9 +1783,9 @@ namespace GRA.Domain.Service
                 currentSettings.SchedulePosted = settings.SchedulePosted;
                 currentSettings.ScheduleStartDate = settings.ScheduleStartDate;
                 currentSettings.ScheduleEndDate = settings.ScheduleEndDate;
-                currentSettings.SetupSupplementalText = settings.SetupSupplementalText;
-                currentSettings.VendorIdPrompt = settings.VendorIdPrompt;
-                currentSettings.VendorCodeFormat = settings.VendorCodeFormat;
+                currentSettings.SetupSupplementalText = settings.SetupSupplementalText?.Trim();
+                currentSettings.VendorIdPrompt = settings.VendorIdPrompt?.Trim();
+                currentSettings.VendorCodeFormat = settings.VendorCodeFormat?.Trim();
 
                 await _psSettingsRepository.UpdateSaveAsync(authId, currentSettings);
             }
@@ -1854,7 +1815,7 @@ namespace GRA.Domain.Service
 
             if (scheduleDate?.StartTime.HasValue == false)
             {
-                throw new GraException("The peformer is not available on that day.");
+                throw new GraException("The performer is not available on that day.");
             }
 
             var scheduleStartTime = scheduleDate?.StartTime ?? DateTime.Parse("8:00 AM");
@@ -1871,11 +1832,12 @@ namespace GRA.Domain.Service
                 || programStart.AddMinutes(programLength).TimeOfDay > scheduleEndTime.TimeOfDay
                 || programStart.AddMinutes(programLength).Date != programStart.Date)
             {
-                throw new GraException("The peformer is not available at that time.");
+                throw new GraException("The performer is not available at that time.");
             }
 
             var setupStartTime = programStart.AddMinutes(-program.SetupTimeMinutes).TimeOfDay;
-            var breakdownEndTime = programStart.AddMinutes(programLength + program.BreakdownTimeMinutes)
+            var breakdownEndTime = programStart
+                .AddMinutes(programLength + program.BreakdownTimeMinutes)
                 .TimeOfDay;
 
             var bookedTimes = await _psBranchSelectionRepository.GetByPerformerIdAsync(
@@ -1893,7 +1855,7 @@ namespace GRA.Domain.Service
                 || (_.ScheduleStartTime.TimeOfDay >= setupStartTime
                     && _.ScheduleStartTime.AddMinutes(_.ScheduleDuration).TimeOfDay <= breakdownEndTime)))
             {
-                throw new GraException("The peformer is already booked during that time.");
+                throw new GraException("The performer is already booked during that time.");
             }
 
             if (bookedTimes.Any(_ => (_.ScheduleStartTime.AddMinutes(_.ScheduleDuration + 60).TimeOfDay >= setupStartTime

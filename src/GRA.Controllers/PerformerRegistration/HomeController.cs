@@ -128,7 +128,6 @@ namespace GRA.Controllers.PerformerRegistration
                 BranchAvailability = performer.Branches.Select(_ => _.Id).ToList(),
                 IsEditable = schedulingStage == PsSchedulingStage.RegistrationOpen,
                 Performer = performer,
-                ReferencesPath = _pathResolver.ResolveContentPath(performer.ReferencesFilename),
                 Settings = settings,
                 Systems = await _performerSchedulingService
                     .GetSystemListWithoutExcludedBranchesAsync(),
@@ -390,7 +389,7 @@ namespace GRA.Controllers.PerformerRegistration
 
                 viewModel.Performer = new PsPerformer
                 {
-                    Name = user.FullName,
+                    ContactName = user.FullName,
                     Email = user.Email,
                     Phone = user.PhoneNumber
                 };
@@ -449,19 +448,6 @@ namespace GRA.Controllers.PerformerRegistration
                         ModelState.AddModelError("Images", $"Please limit uploads to a max of {MaxUploadMB}MB.");
                     }
                 }
-
-                if (model.References == null)
-                {
-                    ModelState.AddModelError("References", "Please attach a list of references to submit.");
-                }
-            }
-
-            if (model.References != null
-                && !string.Equals(Path.GetExtension(model.References.FileName),
-                ".pdf",
-                StringComparison.OrdinalIgnoreCase))
-            {
-                ModelState.AddModelError("References", "Please attach a .pdf file.");
             }
 
             if (ModelState.IsValid)
@@ -479,16 +465,6 @@ namespace GRA.Controllers.PerformerRegistration
                 {
                     performer = await _performerSchedulingService.AddPerformerAsync(performer,
                         BranchAvailability);
-                }
-
-                if (model.References != null)
-                {
-                    using var fileStream = model.References.OpenReadStream();
-                    using var ms = new MemoryStream();
-                    fileStream.CopyTo(ms);
-                    await _performerSchedulingService.SetPerformerReferencesAsync(
-                        performer.Id, ms.ToArray(),
-                        Path.GetExtension(model.References.FileName));
                 }
 
                 if (!performer.RegistrationCompleted)
@@ -781,6 +757,11 @@ namespace GRA.Controllers.PerformerRegistration
                     siteId,
                     program.Images[0].Filename);
                 viewModel.Image = _pathResolver.ResolveContentPath(path);
+            }
+
+            if (!program.IsApproved)
+            {
+                ShowAlertWarning($"There are issues with this program and it will not be available for selection. Please contact {settings.ContactEmail} if you have any questions.");
             }
 
             return View(viewModel);

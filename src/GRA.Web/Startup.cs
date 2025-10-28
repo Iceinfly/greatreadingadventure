@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using GRA.Abstract;
 using GRA.Controllers.RouteConstraint;
+using GRA.Data.Config;
 using GRA.Domain.Model;
 using GRA.Domain.Service;
 using GRA.Domain.Service.Abstract;
+using Mapster;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -401,12 +403,16 @@ namespace GRA.Web
                 _.AddJavaScriptBundle("/js/markdown.min.js",
                     "js/commonmark.js",
                     "Scripts/WMD.js").UseContentRoot();
+                _.AddJavaScriptBundle("/js/qr-code-styling.min.js",
+                    "js/qr-code-styling.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/slick.min.js",
                     "js/slick.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/slick-avatar.min.js",
                     "Scripts/slick-avatar.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/jquery-ui.min.js",
                     "Scripts/jquery-ui-1.12.1.custom/jquery-ui.js").UseContentRoot();
+                _.AddJavaScriptBundle("/js/messages_es.min.js",
+                    "js/messages_es.js").UseContentRoot();
 
                 _.AddCssBundle("/css/main.min.css",
                     "css/bootstrap.css",
@@ -573,6 +579,7 @@ namespace GRA.Web
             services.AddScoped<PrizeWinnerService>();
             services.AddScoped<QuestionnaireService>();
             services.AddScoped<ReportService>();
+            services.AddScoped<ReportRequestService>();
             services.AddScoped<RoleService>();
             services.AddScoped<SampleDataService>();
             services.AddScoped<SchoolImportExportService>();
@@ -706,7 +713,8 @@ namespace GRA.Web
             services.AddScoped<Domain.Repository.IVendorCodeRepository, Data.Repository.VendorCodeRepository>();
             services.AddScoped<Domain.Repository.IVendorCodeTypeRepository, Data.Repository.VendorCodeTypeRepository>();
 
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddMapster();
+            MappingConfig.RegisterMappings();
 
             services.AddScoped<JobTaskRunner>();
             services.AddHostedService<JobBackgroundService>();
