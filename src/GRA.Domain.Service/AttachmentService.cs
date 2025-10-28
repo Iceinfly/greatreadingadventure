@@ -66,12 +66,19 @@ namespace GRA.Domain.Service
             return null;
         }
 
-        private string BuildAttachmentRootPath(int siteId)
-            => Path.Combine($"site{siteId}", AttachmentPath);
-
         public async Task<Attachment> GetByIdAsync(int attachmentId)
         {
             return await _attachmentRepository.GetByIdAsync(attachmentId);
+        }
+
+        public string GetCertificatePath(int attachmentId, int? siteId = null)
+        {
+            int site = siteId ?? GetCurrentSiteId();
+
+            return Path.Combine(
+                BuildAttachmentRootPath(site),
+                Certificates,
+                $"certificate{attachmentId}.pdf");
         }
 
         public async Task RemoveAttachmentFileAsync(int attachmentId)
@@ -117,16 +124,8 @@ namespace GRA.Domain.Service
             return null;
         }
 
-        public string GetCertificatePath(int attachmentId, int? siteId = null)
-        {
-            int site = siteId ?? GetCurrentSiteId();
-
-            return Path.Combine(
-                BuildAttachmentRootPath(site),
-                Certificates,
-                $"certificate{attachmentId}.pdf");
-        }
-
+        private string BuildAttachmentRootPath(int siteId)
+            => Path.Combine($"site{siteId}", AttachmentPath);
         private async Task RemoveAttachment(int attachmentId)
         {
             var attachment = await _attachmentRepository.GetByIdAsync(attachmentId);

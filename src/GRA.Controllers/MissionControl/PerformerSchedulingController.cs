@@ -343,7 +343,7 @@ namespace GRA.Controllers.MissionControl
             if (kit.Images.Count > 0)
             {
                 var siteId = GetCurrentSiteId();
-                var path = _performerSchedulingService.GetKitImagePath(siteId, 
+                var path = _performerSchedulingService.GetKitImagePath(siteId,
                     kit.Images[0].Filename);
                 viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }

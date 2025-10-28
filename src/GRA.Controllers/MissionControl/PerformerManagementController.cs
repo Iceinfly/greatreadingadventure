@@ -553,7 +553,7 @@ namespace GRA.Controllers.MissionControl
             viewModel.PerformerImages.ForEach(img =>
             {
                 var path = _performerSchedulingService.GetPerformerImagePath(
-                    siteId, 
+                    siteId,
                     img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
@@ -1071,7 +1071,7 @@ namespace GRA.Controllers.MissionControl
                 }
                 catch (GraException gex)
                 {
-                    ShowAlertDanger($"Unable to {(model.Approve ? "Approve" : "Unapprove")} program: ", 
+                    ShowAlertDanger($"Unable to {(model.Approve ? "Approve" : "Unapprove")} program: ",
                         gex);
                     return RedirectToAction(nameof(Performers));
                 }
@@ -1716,7 +1716,7 @@ namespace GRA.Controllers.MissionControl
             {
                 var siteId = GetCurrentSiteId();
                 var path = _performerSchedulingService.GetKitImagePath(
-                    siteId, 
+                    siteId,
                     kit.Images[0].Filename);
                 kit.Images[0].Filename = _pathResolver.ResolveContentPath(path);
             }

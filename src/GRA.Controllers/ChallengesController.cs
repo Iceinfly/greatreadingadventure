@@ -175,6 +175,7 @@ namespace GRA.Controllers
             PageTitle = _sharedLocalizer[Annotations.Title.ChallengeDetails, challenge.Name];
             return View(viewModel);
         }
+
         public async Task<IActionResult> Index(string Search = null,
                     int? Program = null,
                     string Categories = null,

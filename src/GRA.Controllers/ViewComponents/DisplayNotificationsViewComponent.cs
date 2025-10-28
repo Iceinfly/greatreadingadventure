@@ -17,11 +17,10 @@ namespace GRA.Controllers.ViewComponents
     public class DisplayNotificationsViewComponent : ViewComponent
     {
         private const int MaxNotifications = 3;
+        private readonly BadgeService _badgeService;
         private readonly IPathResolver _pathResolver;
         private readonly IHtmlLocalizer<Resources.Shared> _sharedHtmlLocalizer;
         private readonly IStringLocalizer<Resources.Shared> _sharedLocalizer;
-        private readonly BadgeService _badgeService;
-
         public DisplayNotificationsViewComponent(IPathResolver pathResolver,
             IStringLocalizer<Resources.Shared> sharedLocalizer,
             IHtmlLocalizer<Resources.Shared> sharedHtmlLocalizer,
