@@ -14,12 +14,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Setting performer programs to be unapproved
 - Performer field for contact name
 - Performer scheduling settings for cover sheet fields
+- View of and access to historical report output
+- QR code generation ability
+- Spanish localization for jQuery validation messages
+- Join codes for tracking signups
+- Ability to override activity button text
 
 ## Changed
 
 - Update packages
 - Update Docker lock checksums
 - Performer references to be a text input instead of file
+- Update front-end packages
+- Add achiever column to badge report
 
 ## Fixed
 

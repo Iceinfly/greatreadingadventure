@@ -403,12 +403,16 @@ namespace GRA.Web
                 _.AddJavaScriptBundle("/js/markdown.min.js",
                     "js/commonmark.js",
                     "Scripts/WMD.js").UseContentRoot();
+                _.AddJavaScriptBundle("/js/qr-code-styling.min.js",
+                    "js/qr-code-styling.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/slick.min.js",
                     "js/slick.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/slick-avatar.min.js",
                     "Scripts/slick-avatar.js").UseContentRoot();
                 _.AddJavaScriptBundle("/js/jquery-ui.min.js",
                     "Scripts/jquery-ui-1.12.1.custom/jquery-ui.js").UseContentRoot();
+                _.AddJavaScriptBundle("/js/messages_es.min.js",
+                    "js/messages_es.js").UseContentRoot();
 
                 _.AddCssBundle("/css/main.min.css",
                     "css/bootstrap.css",
@@ -565,6 +569,7 @@ namespace GRA.Web
             services.AddScoped<ExitLandingService>();
             services.AddScoped<GroupTypeService>();
             services.AddScoped<JobService>();
+            services.AddScoped<JoinCodeService>();
             services.AddScoped<LanguageService>();
             services.AddScoped<MailService>();
             services.AddScoped<MessageTemplateService>();
@@ -575,6 +580,7 @@ namespace GRA.Web
             services.AddScoped<PrizeWinnerService>();
             services.AddScoped<QuestionnaireService>();
             services.AddScoped<ReportService>();
+            services.AddScoped<ReportRequestService>();
             services.AddScoped<RoleService>();
             services.AddScoped<SampleDataService>();
             services.AddScoped<SchoolImportExportService>();
@@ -661,6 +667,7 @@ namespace GRA.Web
             services.AddScoped<Domain.Repository.IGroupInfoRepository, Data.Repository.GroupInfoRepository>();
             services.AddScoped<Domain.Repository.IGroupTypeRepository, Data.Repository.GroupTypeRepository>();
             services.AddScoped<Domain.Repository.IJobRepository, Data.Repository.JobRepository>();
+            services.AddScoped<Domain.Repository.IJoinCodeRepository, Data.Repository.JoinCodeRepository>();
             services.AddScoped<Domain.Repository.ILanguageRepository, Data.Repository.LanguageRepository>();
             services.AddScoped<Domain.Repository.ILocationRepository, Data.Repository.LocationRepository>();
             services.AddScoped<Domain.Repository.IMailRepository, Data.Repository.MailRepository>();
