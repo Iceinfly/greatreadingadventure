@@ -1,22 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper.QueryableExtensions;
 using GRA.Domain.Model;
 using GRA.Domain.Repository;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace GRA.Data.Repository
 {
-    public class MailRepository
-        : AuditingRepository<Model.Mail, Mail>, IMailRepository
+    public class MailRepository(ServiceFacade.Repository repositoryFacade,
+        ILogger<MailRepository> logger)
+                : AuditingRepository<Model.Mail, Mail>(repositoryFacade, logger), IMailRepository
     {
-        public MailRepository(ServiceFacade.Repository repositoryFacade,
-            ILogger<MailRepository> logger) : base(repositoryFacade, logger)
-        {
-        }
-
         public async Task<IEnumerable<Mail>> PageAllAsync(int siteId, int skip, int take)
         {
             return await DbSet
@@ -25,7 +21,7 @@ namespace GRA.Data.Repository
                 .OrderByDescending(_ => _.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .ToListAsync();
         }
 
@@ -59,17 +55,14 @@ namespace GRA.Data.Repository
                 .OrderByDescending(_ => _.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .ToListAsync();
         }
 
         public async Task MarkAdminReplied(int mailId)
         {
-            var mail = await GetByIdAsync(mailId);
-            if (mail == null)
-            {
-                throw new GraException($"Mail id {mailId} not found.");
-            }
+            var mail = await GetByIdAsync(mailId)
+                ?? throw new GraException($"Mail id {mailId} not found.");
             mail.IsRepliedTo = true;
             await UpdateSaveNoAuditAsync(mail);
         }
@@ -97,7 +90,7 @@ namespace GRA.Data.Repository
                 .OrderByDescending(_ => _.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .ToListAsync();
         }
 
@@ -109,7 +102,7 @@ namespace GRA.Data.Repository
                 .OrderByDescending(_ => _.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .ToListAsync();
         }
 
@@ -128,7 +121,7 @@ namespace GRA.Data.Repository
                 .SingleOrDefault();
             if (mail == null)
             {
-                _logger.LogError($"Could not find mail id {mailId}");
+                _logger.LogError("Could not find mail id {MailId}", mailId);
                 throw new GraException($"Could not find mail id {mailId}");
             }
             mail.IsNew = false;
@@ -140,7 +133,7 @@ namespace GRA.Data.Repository
             return await DbSet
                 .AsNoTracking()
                 .Where(_ => !_.IsDeleted && _.Id == id)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .SingleOrDefaultAsync();
         }
 
@@ -166,7 +159,7 @@ namespace GRA.Data.Repository
             return await DbSet.AsNoTracking()
                 .Where(_ => _.Id == threadId || _.ThreadId == threadId)
                 .OrderBy(_ => _.CreatedAt)
-                .ProjectTo<Mail>(_mapper.ConfigurationProvider)
+                .ProjectToType<Mail>()
                 .ToListAsync();
         }
     }

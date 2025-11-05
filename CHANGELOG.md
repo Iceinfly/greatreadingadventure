@@ -8,6 +8,35 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Added
 
+- Alt texts to avatar color, item and layer selector images
+- Mission Control interface to set avatar color and item alt texts
+- BranchId token to vendor code URLs
+- Setting performer programs to be unapproved
+- Performer field for contact name
+- Performer scheduling settings for cover sheet fields
+- View of and access to historical report output
+- QR code generation ability
+- Spanish localization for jQuery validation messages
+- Join codes for tracking signups
+- Ability to override activity button text
+
+## Changed
+
+- Update packages
+- Update Docker lock checksums
+- Performer references to be a text input instead of file
+- Update front-end packages
+- Add achiever column to badge report
+
+## Fixed
+
+- Display of modals after Bootstrap 5.3 upgrade
+- Performer program cost to display in currency format
+
+## [4.6.0] 2024-10-09
+
+## Added
+
 - "Ordered not Shipped" vendor report
 - "Shipped not Arrived" vendor report
 - "Titles not shipped" vendor report
@@ -24,6 +53,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Report criteria shows for selected badges/challenges/triggers on Excel metadata sheet
 - Hints about how many daily images are needed on daily image upload page
 - Handling of re-shipped vendor items when an imported order date is after a recorded ship date
+- Mission Control interface for managing daily images
 
 ## Changed
 
@@ -32,6 +62,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Better vendor code status overview
 - Add tracking of packing list viewing
 - Move exit and landing page messages to database
+- Remove references to ValueTuple
+- Replace AutoMapper with Mapster
 
 ### Fixed
 
@@ -46,7 +78,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Issue preventing deletion of locations without associated events
 - Issue where cloning a Community Experience would create an event
 - Issue where a failed save of a Community Experience would change it to an event
-- Initial branch selection on join to only autoselect if there is a single configured branch\
+- Initial branch selection on join to only autoselect if there is a single configured branch
 - Fix branch deletion to reassign deleted users as well as active users
 - Formatting issues with revised packing slip
 - Error when code is assigned prior to one being earned
@@ -59,6 +91,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Page preview links in Mission Control
 - Issue with proper pagination while searching to add household member in MC
 - Issue with filtering of deleted participants while searching to add household member in MC
+- Replace string interpolation in logging statements
 
 ## [4.5.0] 2024-08-29
 
@@ -544,6 +577,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - Everything! First release of 4.0.
 
+[4.6.0]: https://github.com/mcld/greatreadingadventure/tree/v4.6.0
 [4.5.0]: https://github.com/mcld/greatreadingadventure/tree/v4.5.0
 [4.4.2]: https://github.com/mcld/greatreadingadventure/tree/v4.4.2
 [4.4.1]: https://github.com/mcld/greatreadingadventure/tree/v4.4.1

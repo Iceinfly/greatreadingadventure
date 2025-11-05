@@ -17,7 +17,7 @@ namespace GRA.Data.SqlServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.18")
+                .HasAnnotation("ProductVersion", "8.0.21")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -256,6 +256,26 @@ namespace GRA.Data.SqlServer.Migrations
                     b.ToTable("AvatarColors");
                 });
 
+            modelBuilder.Entity("GRA.Data.Model.AvatarColorText", b =>
+                {
+                    b.Property<int>("AvatarColorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AltText")
+                        .IsRequired()
+                        .HasMaxLength(130)
+                        .HasColumnType("nvarchar(130)");
+
+                    b.HasKey("AvatarColorId", "LanguageId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("AvatarColorTexts");
+                });
+
             modelBuilder.Entity("GRA.Data.Model.AvatarElement", b =>
                 {
                     b.Property<int>("Id")
@@ -327,6 +347,26 @@ namespace GRA.Data.SqlServer.Migrations
                     b.HasIndex("AvatarLayerId");
 
                     b.ToTable("AvatarItems");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.AvatarItemText", b =>
+                {
+                    b.Property<int>("AvatarItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LanguageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AltText")
+                        .IsRequired()
+                        .HasMaxLength(130)
+                        .HasColumnType("nvarchar(130)");
+
+                    b.HasKey("AvatarItemId", "LanguageId");
+
+                    b.HasIndex("LanguageId");
+
+                    b.ToTable("AvatarItemTexts");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.AvatarLayer", b =>
@@ -1717,6 +1757,47 @@ namespace GRA.Data.SqlServer.Migrations
                     b.ToTable("Jobs");
                 });
 
+            modelBuilder.Entity("GRA.Data.Model.JoinCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccessCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsQRCode")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("JoinCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("JoinCodes");
+                });
+
             modelBuilder.Entity("GRA.Data.Model.Language", b =>
                 {
                     b.Property<int>("Id")
@@ -2288,6 +2369,9 @@ namespace GRA.Data.SqlServer.Migrations
                     b.Property<bool>("AskSchool")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("ButtonSegmentId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -2591,6 +2675,11 @@ namespace GRA.Data.SqlServer.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -2624,9 +2713,10 @@ namespace GRA.Data.SqlServer.Migrations
                     b.Property<bool>("PhonePreferred")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ReferencesFilename")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<string>("References")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<bool>("RegistrationCompleted")
                         .HasColumnType("bit");
@@ -2763,6 +2853,9 @@ namespace GRA.Data.SqlServer.Migrations
                         .HasMaxLength(375)
                         .HasColumnType("nvarchar(375)");
 
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MaximumCapacity")
                         .HasColumnType("int");
 
@@ -2851,6 +2944,14 @@ namespace GRA.Data.SqlServer.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("ContactEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CoverSheetBranch")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CoverSheetContact")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -3059,6 +3160,9 @@ namespace GRA.Data.SqlServer.Migrations
 
                     b.Property<int?>("GroupInfoId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IncludeAchieverStatus")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("MaximumAllowableActivity")
                         .HasColumnType("int");
@@ -4553,6 +4657,25 @@ namespace GRA.Data.SqlServer.Migrations
                     b.Navigation("AvatarLayer");
                 });
 
+            modelBuilder.Entity("GRA.Data.Model.AvatarColorText", b =>
+                {
+                    b.HasOne("GRA.Data.Model.AvatarColor", "AvatarColor")
+                        .WithMany("Texts")
+                        .HasForeignKey("AvatarColorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GRA.Data.Model.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AvatarColor");
+
+                    b.Navigation("Language");
+                });
+
             modelBuilder.Entity("GRA.Data.Model.AvatarElement", b =>
                 {
                     b.HasOne("GRA.Data.Model.AvatarColor", "AvatarColor")
@@ -4580,6 +4703,25 @@ namespace GRA.Data.SqlServer.Migrations
                         .IsRequired();
 
                     b.Navigation("AvatarLayer");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.AvatarItemText", b =>
+                {
+                    b.HasOne("GRA.Data.Model.AvatarItem", "AvatarItem")
+                        .WithMany("Texts")
+                        .HasForeignKey("AvatarItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GRA.Data.Model.Language", "Language")
+                        .WithMany()
+                        .HasForeignKey("LanguageId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AvatarItem");
+
+                    b.Navigation("Language");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.AvatarLayerText", b =>
@@ -4850,6 +4992,16 @@ namespace GRA.Data.SqlServer.Migrations
                     b.Navigation("GroupType");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.JoinCode", b =>
+                {
+                    b.HasOne("GRA.Data.Model.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Branch");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.NewsPost", b =>
@@ -5619,6 +5771,16 @@ namespace GRA.Data.SqlServer.Migrations
             modelBuilder.Entity("GRA.Data.Model.AvatarBundle", b =>
                 {
                     b.Navigation("AvatarBundleItems");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.AvatarColor", b =>
+                {
+                    b.Navigation("Texts");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.AvatarItem", b =>
+                {
+                    b.Navigation("Texts");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.AvatarLayer", b =>

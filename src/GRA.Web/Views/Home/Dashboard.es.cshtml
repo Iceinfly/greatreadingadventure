@@ -73,8 +73,9 @@ else if (Model.HasOrderStatus)
                                 @foreach (var layer in Model.AvatarElements)
                                 {
                                     <img src="~/@layer.Filename"
-                                         style="z-index: @(layer.AvatarItem.AvatarLayerPosition + 1)"
-                                         class="avatar-layer-dashboard" />
+                                         style="z-index: @(layer.LayerPosition + 1)"
+                                         class="avatar-layer-dashboard"
+										 alt="@layer.AltText"/>
                                 }
                             </div>
                         }
@@ -209,7 +210,18 @@ else if (Model.HasOrderStatus)
                             <button type="submit"
                                     class="btn mx-auto btn-outline-success btn-lg"
                                     button-spinner>
-                                <span class="buttonText">@SharedLocalizer["I read a book!"]</span>
+                                <span class="buttonText">
+									<span class="buttonText">
+										@if (!string.IsNullOrWhiteSpace(Model.ButtonText))
+										{
+											@Model.ButtonText
+										}
+										else
+										{
+											@SharedLocalizer["I read a book!"]
+										}
+									</span>
+								</span>
                             </button>
                         </form>
                     </div>
@@ -265,7 +277,16 @@ else if (Model.HasOrderStatus)
                             <button type="submit"
                                     class="btn btn-outline-primary"
                                     button-spinner>
-                                <span class="buttonText">@SharedLocalizer["Log {0}", SharedLocalizer[Model.ActivityDescriptionPlural]]</span>
+                                <span class="buttonText">
+									@if (!string.IsNullOrWhiteSpace(Model.ButtonText))
+									{
+										@Model.ButtonText
+									}
+									else
+									{
+										@SharedLocalizer["Log {0}", SharedLocalizer[Model.ActivityDescriptionPlural]]
+									}
+								</span>
                             </button>
                         </div>
                     </div>

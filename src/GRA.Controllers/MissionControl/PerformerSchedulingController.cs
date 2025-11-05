@@ -36,9 +36,12 @@ namespace GRA.Controllers.MissionControl
             PerformerSchedulingService performerSchedulingService)
             : base(context)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _performerSchedulingService = performerSchedulingService
-                ?? throw new ArgumentNullException(nameof(performerSchedulingService));
+            ArgumentNullException.ThrowIfNull(logger);
+            ArgumentNullException.ThrowIfNull(performerSchedulingService);
+
+            _logger = logger;
+            _performerSchedulingService = performerSchedulingService;
+
             PageTitle = "Performer Scheduling";
         }
 
@@ -89,6 +92,15 @@ namespace GRA.Controllers.MissionControl
                 {
                     success = false,
                     message = "Program selection has not yet started."
+                });
+            }
+
+            if (branchSelection == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "You must supply information to edit."
                 });
             }
 
@@ -484,9 +496,6 @@ namespace GRA.Controllers.MissionControl
                     .GetPerformerAgeGroupsAsync(performer.Id),
                 BlackoutDates = await _performerSchedulingService.GetBlackoutDatesAsync(),
                 Performer = performer,
-                ReferencesPath = string.IsNullOrEmpty(performer?.ReferencesFilename)
-                    ? ""
-                    : _pathResolver.ResolveContentPath(performer.ReferencesFilename),
                 Settings = settings,
                 System = system
             };
@@ -591,7 +600,7 @@ namespace GRA.Controllers.MissionControl
                 performer.AvailableInSystem = await _performerSchedulingService
                     .GetPerformerSystemAvailabilityAsync(performer.Id, systemId);
                 performer.ProgramCount = await _performerSchedulingService
-                    .GetPerformerProgramCountAsync(performer.Id);
+                    .GetPerformerProgramCountAsync(performer.Id, onlyApproved: true);
             }
 
             var viewModel = new PerformerListViewModel
@@ -898,7 +907,7 @@ namespace GRA.Controllers.MissionControl
             }
             catch (GraException gex)
             {
-                ShowAlertDanger($"Unable to select kit: ", gex);
+                ShowAlertDanger($"Unable to select kit: {Kit}", gex);
             }
 
             if (branchSelection?.KitId != null)
@@ -915,6 +924,8 @@ namespace GRA.Controllers.MissionControl
         [Authorize(Policy = Policy.SchedulePerformers)]
         public async Task<IActionResult> SelectProgram(ProgramViewModel model)
         {
+            ArgumentNullException.ThrowIfNull(model);
+
             var settings = await _performerSchedulingService.GetSettingsAsync();
             var schedulingStage = _performerSchedulingService.GetSchedulingStage(settings);
             if (schedulingStage != PsSchedulingStage.SchedulingOpen)

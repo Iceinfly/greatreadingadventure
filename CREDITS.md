@@ -64,11 +64,6 @@ The Great Reading Adventure uses open source components. You can find informatio
 - [Microsoft .NET](https://dotnet.microsoft.com/) is a general purpose development platform maintained by Microsoft and the .NET community on GitHub. It is cross-platform, supporting Windows, macOS and Linux, and can be used in device, cloud, and embedded/IoT scenarios.
 - Source on GitHub: [dotnet/aspnetcore](https://github.com/dotnet/aspnetcore) - [MIT License](https://github.com/dotnet/aspnetcore/blob/main/LICENSE.txt)
 
-### AutoMapper
-
-- [AutoMapper](http://automapper.org/): A convention-based object-object mapper.
-- Source on GitHub: [automapper/automapper](https://github.com/AutoMapper/AutoMapper) - [MIT License](https://github.com/AutoMapper/AutoMapper/blob/master/LICENSE.txt)
-
 ### Bootstrap
 
 - A sleek, intuitive, and powerful mobile first front-end framework for faster and easier web development.
@@ -149,6 +144,11 @@ The Great Reading Adventure uses open source components. You can find informatio
 - A cross-platform .NET library for IMAP, POP3, and SMTP.
 - Source on GitHub: [jstedfast/MailKit](https://github.com/jstedfast/MailKit) - [MIT License](https://github.com/jstedfast/MailKit/blob/master/License.md)
 
+### Mapster
+
+- An object-object mapper.
+- Source on GitHub: [MapsterMapper/Mapster](https://github.com/MapsterMapper/Mapster) - [MIT License](https://github.com/MapsterMapper/Mapster/blob/master/LICENSE)
+
 ### Moment.js
 
 - Parse, validate, manipulate, and display dates and times in JavaScript.
@@ -164,6 +164,11 @@ The Great Reading Adventure uses open source components. You can find informatio
 - Securely hash passwords for storage in the database and for valiating logins.
 - Adapted code from the [ASP.NET Identity PasswordHasher class](https://github.com/aspnet/Identity/blob/dev/src/Microsoft.AspNetCore.Identity/PasswordHasher.cs)
 - Source on GitHub: [aspnet/Identity](https://github.com/aspnet/Identity) - [Apache License, Version 2.0](https://github.com/aspnet/Identity/blob/dev/LICENSE.txt)
+
+### qr-code-styling
+
+- Automaticly generate your styled QR code in your web app.
+- Source on GitHub: [kozakdenys/qr-code-styling](https://github.com/kozakdenys/qr-code-styling) - [MIT License](https://github.com/kozakdenys/qr-code-styling/blob/master/LICENSE)
 
 ### Serilog
 

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper.QueryableExtensions;
 using GRA.Domain.Model;
 using GRA.Domain.Repository;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -24,17 +24,21 @@ namespace GRA.Data.Repository
                .Where(_ => _.SiteId == siteId)
                .OrderBy(_ => _.GroupId)
                .ThenBy(_ => _.SortOrder)
-               .ProjectTo<AvatarLayer>(_mapper.ConfigurationProvider)
+               .ProjectToType<AvatarLayer>()
                .ToListAsync();
         }
 
         public async Task<ICollection<AvatarLayer>> GetAllWithColorsAsync(int siteId)
         {
+            var forkedConfig = _mapper.Config
+                .Fork(_ => _.NewConfig<Model.AvatarLayer, AvatarLayer>()
+                    .Ignore(dest => dest.AvatarItems));
+
             return await DbSet.AsNoTracking()
                 .Where(_ => _.SiteId == siteId)
                 .OrderBy(_ => _.GroupId)
                 .ThenBy(_ => _.SortOrder)
-                .ProjectTo<AvatarLayer>(_mapper.ConfigurationProvider, _ => _.AvatarColors)
+                .ProjectToType<AvatarLayer>(forkedConfig)
                 .ToListAsync();
         }
 
@@ -63,6 +67,16 @@ namespace GRA.Data.Repository
                 { "Name", layerText.Name },
                 { "RemoveLabel", layerText.RemoveLabel }
             };
+        }
+
+        public async Task<string> GetNameByLanguageIdAsync(int layerId, int languageId)
+        {
+
+            return await _context.AvatarLayerTexts
+                   .AsNoTracking()
+                   .Where(_ => _.AvatarLayerId == layerId && _.LanguageId == languageId)
+                   .Select(_ => _.Name)
+                   .FirstOrDefaultAsync();
         }
     }
 }

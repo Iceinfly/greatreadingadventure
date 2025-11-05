@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper.QueryableExtensions;
 using GRA.Domain.Model;
 using GRA.Domain.Model.Filters;
 using GRA.Domain.Repository;
 using GRA.Domain.Repository.Extensions;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -19,19 +19,26 @@ namespace GRA.Data.Repository
         {
         }
 
+        public async Task<int> CountAsync(BaseFilter filter)
+        {
+            return await ApplyFilters(filter)
+                .CountAsync();
+        }
+
         public async Task<IEnumerable<DailyLiteracyTip>> GetAllAsync(int siteId)
         {
             return await DbSet.AsNoTracking()
                 .Where(_ => _.SiteId == siteId)
                 .OrderBy(_ => _.Name)
-                .ProjectTo<DailyLiteracyTip>(_mapper.ConfigurationProvider)
+                .ProjectToType<DailyLiteracyTip>()
                 .ToListAsync();
         }
 
-        public async Task<int> CountAsync(BaseFilter filter)
+        public async Task<bool> IsInUseAsync(int dailyLiteracyTipId)
         {
-            return await ApplyFilters(filter)
-                .CountAsync();
+            return await _context.Programs.AsNoTracking()
+                .Where(_ => _.DailyLiteracyTipId == dailyLiteracyTipId)
+                .AnyAsync();
         }
 
         public async Task<ICollection<DailyLiteracyTip>> PageAsync(BaseFilter filter)
@@ -39,7 +46,7 @@ namespace GRA.Data.Repository
             return await ApplyFilters(filter)
                 .OrderBy(_ => _.Name)
                 .ApplyPagination(filter)
-                .ProjectTo<DailyLiteracyTip>(_mapper.ConfigurationProvider)
+                .ProjectToType<DailyLiteracyTip>()
                 .ToListAsync();
         }
 
@@ -48,13 +55,6 @@ namespace GRA.Data.Repository
             return DbSet
                 .AsNoTracking()
                 .Where(_ => _.SiteId == filter.SiteId);
-        }
-
-        public async Task<bool> IsInUseAsync(int dailyLiteracyTipId)
-        {
-            return await _context.Programs.AsNoTracking()
-                .Where(_ => _.DailyLiteracyTipId == dailyLiteracyTipId)
-                .AnyAsync();
         }
     }
 }
