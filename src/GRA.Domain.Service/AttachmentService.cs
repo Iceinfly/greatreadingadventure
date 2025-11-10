@@ -50,18 +50,18 @@ namespace GRA.Domain.Service
                     SiteId = GetCurrentSiteId(),
                     IsCertificate = true
                 };
-                var result = await _attachmentRepository.AddSaveAsync(GetClaimId(ClaimType.UserId), attachment);
+                var result = await _attachmentRepository
+                    .AddSaveAsync(GetClaimId(ClaimType.UserId), attachment);
+
                 using (var ms = new MemoryStream())
                 {
                     await file.CopyToAsync(ms);
                     attachmentBytes = ms.ToArray();
                 }
 
-                result.FileName = await WriteAttachmentFile(result,
-                    attachmentType,
-                    attachmentBytes);
+                await WriteAttachmentFile(result, attachmentType, attachmentBytes);
 
-                return await _attachmentRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), result);
+                return result;
             }
             return null;
         }
@@ -75,10 +75,7 @@ namespace GRA.Domain.Service
         {
             int site = siteId ?? GetCurrentSiteId();
 
-            return Path.Combine(
-                BuildAttachmentRootPath(site),
-                Certificates,
-                $"certificate{attachmentId}.pdf");
+            return $"{BuildAttachmentRootPath(site)}/{Certificates}/certificate{attachmentId}.pdf";
         }
 
         public async Task RemoveAttachmentFileAsync(int attachmentId)
@@ -125,7 +122,7 @@ namespace GRA.Domain.Service
         }
 
         private string BuildAttachmentRootPath(int siteId)
-            => Path.Combine($"site{siteId}", AttachmentPath);
+            => $"site{siteId}/{AttachmentPath}";
         private async Task RemoveAttachment(int attachmentId)
         {
             var attachment = await _attachmentRepository.GetByIdAsync(attachmentId);
