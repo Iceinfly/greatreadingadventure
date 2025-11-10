@@ -94,7 +94,7 @@ namespace GRA.Controllers.Helpers
 
             AddDublinCoreTags(output, site);
 
-            if (!string.IsNullOrEmpty(Data?.ImageLink) || !string.IsNullOrEmpty(Data?.ImageFilename))
+            if (!string.IsNullOrEmpty(Data?.ImageLink))
             {
                 AddFacebookTags(output, site, title, description);
                 AddTwitterTags(output);
@@ -185,14 +185,10 @@ namespace GRA.Controllers.Helpers
 
             string cardPath = null;
 
-            if (!string.IsNullOrWhiteSpace(Data?.ImageFilename))
+            if (!string.IsNullOrWhiteSpace(Data?.ImageLink))
             {
                 cardPath = _pathResolver
-              .ResolveContentPath($"site{site.Id}/social/{Data.ImageFilename}");
-            }
-            else if (!string.IsNullOrWhiteSpace(Data?.ImageLink))
-            {
-                cardPath = Data.ImageLink;
+              .ResolveContentPath($"site{site.Id}/social/{Data.ImageLink}");
             }
 
             if (!string.IsNullOrWhiteSpace(cardPath) &&

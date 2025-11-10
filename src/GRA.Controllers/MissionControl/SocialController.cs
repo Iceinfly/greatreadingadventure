@@ -334,13 +334,9 @@ namespace GRA.Controllers.MissionControl
                 TwitterUsername = social?.TwitterUsername
             };
 
-            if(!string.IsNullOrEmpty(social?.ImageFilename))
+            if(!string.IsNullOrEmpty(social?.ImageLink))
             {
-                viewmodel.Filename = social?.ImageFilename;
-            }
-            else if (!string.IsNullOrWhiteSpace(social?.ImageLink))
-            {
-                viewmodel.Filename = social.ImageLink[social.ImageLink.LastIndexOf('/')..];
+                viewmodel.Filename = social?.ImageLink;
             }
 
             if (social?.ImageWidth != default && social?.ImageHeight != default)

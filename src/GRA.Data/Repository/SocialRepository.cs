@@ -88,12 +88,10 @@ namespace GRA.Data.Repository
             social.Title = social.Title?.Trim();
             social.Description = social.Description?.Trim();
 
-            if (!string.IsNullOrWhiteSpace(social.ImageFilename))
+            if (!string.IsNullOrWhiteSpace(social.ImageLink))
             {
-                social.ImageFilename = System.IO.Path.GetFileName(social.ImageFilename.Trim());
+                social.ImageLink = System.IO.Path.GetFileName(social.ImageLink.Trim());
             }
-
-            social.ImageLink = null;
 
             if (social.ImageWidth < 0) 
             {
@@ -143,8 +141,7 @@ namespace GRA.Data.Repository
             entity.Description = social.Description;
             entity.ImageAlt = social.ImageAlt;
             entity.ImageHeight = social.ImageHeight;
-            entity.ImageFilename = social.ImageFilename;
-            entity.ImageLink = null;
+            entity.ImageLink = social.ImageLink;
             entity.ImageWidth = social.ImageWidth;
             entity.Title = social.Title;
             entity.TwitterUsername = social.TwitterUsername;

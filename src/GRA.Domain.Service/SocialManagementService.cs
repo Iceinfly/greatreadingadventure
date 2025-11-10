@@ -78,10 +78,9 @@ namespace GRA.Domain.Service
             var (savedFilename, width, height)
                 = HandleSocialImage(filename, imageBytes);
 
-            social.ImageFilename = savedFilename;
+            social.ImageLink = savedFilename;
             social.ImageWidth = width;
             social.ImageHeight = height;
-            social.ImageLink = null;
 
             await _socialRepository.AddSaveAsync(social);
 
@@ -98,11 +97,11 @@ namespace GRA.Domain.Service
             var toDelete = socials
               .Single(_ => _.SocialHeaderId == socialHeaderId && _.LanguageId == languageId);
 
-            if (!string.IsNullOrWhiteSpace(toDelete.ImageFilename))
+            if (!string.IsNullOrWhiteSpace(toDelete.ImageLink))
             {
                 try
                 {
-                    File.Delete(GetFilePath(toDelete.ImageFilename));
+                    File.Delete(GetFilePath(toDelete.ImageLink));
                 }
                 catch (IOException ioex)
                 {
@@ -214,11 +213,11 @@ namespace GRA.Domain.Service
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(social.ImageFilename))
+            if (!string.IsNullOrWhiteSpace(social.ImageLink))
             {
                 try
                 {
-                    File.Delete(GetFilePath(social.ImageFilename));
+                    File.Delete(GetFilePath(social.ImageLink));
                 }
                 catch (IOException ioex)
                 {
@@ -226,11 +225,9 @@ namespace GRA.Domain.Service
                 }
             }
             var (savedFilename, width, height) = HandleSocialImage(filename, imageBytes);
-            social.ImageFilename = savedFilename;
+            social.ImageLink = savedFilename;
             social.ImageWidth = width;
             social.ImageHeight = height;
-
-            social.ImageLink = null;
 
             await _socialRepository.UpdateSaveAsync(social);
 
