@@ -118,10 +118,7 @@ namespace GRA.Domain.Service
         }
 
         private string BuildItemRootPath(int siteId, int layerId, int itemId) =>
-            Path.Combine($"site{siteId}", "avatars", $"layer{layerId}", $"item{itemId}");
-
-        private string BuildLayerRootPath(int siteId, int layerId) =>
-            Path.Combine($"site{siteId}", "avatars", $"layer{layerId}");
+            $"site{siteId}/avatars/layer{layerId}/item{itemId}/";
 
         public async Task DeleteItemAsync(int id)
         {
@@ -233,8 +230,7 @@ namespace GRA.Domain.Service
             }
             fileName += ".png";
 
-            return Path.Combine(
-                BuildItemRootPath(site, layerId, element.AvatarItemId), fileName);
+            return BuildItemRootPath(site, layerId, element.AvatarItemId) + fileName;
         }
 
         public async Task<AvatarItem> GetItemByLayerPositionSortOrderAsync(int layerPosition,
@@ -265,7 +261,7 @@ namespace GRA.Domain.Service
         public string GetItemThumbnailPath(Model.AvatarItem item, int? siteId = null)
         {
             int site = siteId ?? GetCurrentSiteId();
-            return Path.Combine(BuildItemRootPath(site, item.AvatarLayerId, item.Id), "thumbnail.jpg");
+            return BuildItemRootPath(site, item.AvatarLayerId, item.Id) + "thumbnail.jpg";
         }
 
         public async Task<int> GetLayerAvailableItemCountAsync(int layerId)
@@ -285,9 +281,7 @@ namespace GRA.Domain.Service
             }
             fileName += ".png";
 
-            return Path.Combine(
-                BuildItemRootPath(site, layerId, itemId),
-                fileName);
+            return BuildItemRootPath(site, layerId, itemId) + fileName;
         }
 
         public async Task<IEnumerable<AvatarLayer>> GetLayersAsync()
