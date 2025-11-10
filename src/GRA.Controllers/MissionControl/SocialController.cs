@@ -334,9 +334,14 @@ namespace GRA.Controllers.MissionControl
                 TwitterUsername = social?.TwitterUsername
             };
 
-            if(!string.IsNullOrEmpty(social?.ImageLink))
+            var siteId = GetCurrentSiteId();
+
+            if (!string.IsNullOrWhiteSpace(social?.ImageLink))
             {
-                viewmodel.Filename = social?.ImageLink;
+                viewmodel.Filename = social.ImageLink;
+
+                viewmodel.ImageLink = _socialManagementService
+                    .GetPublicImagePath(siteId, social.ImageLink);
             }
 
             if (social?.ImageWidth != default && social?.ImageHeight != default)
