@@ -1718,7 +1718,7 @@ namespace GRA.Controllers.MissionControl
                 var path = _performerSchedulingService.GetKitImagePath(
                     siteId,
                     kit.Images[0].Filename);
-                kit.Images[0].Filename = _pathResolver.ResolveContentPath(path);
+                viewModel.ImagePath = _pathResolver.ResolveContentPath(path);
             }
 
             if (!string.IsNullOrWhiteSpace(kit.Website)
