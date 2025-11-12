@@ -595,14 +595,19 @@ namespace GRA.Controllers
 
             foreach (var userLog in userLogs.Data)
             {
-                string path;
+                string path = null;
                 if (userLog.AttachmentId.HasValue && userLog.AttachmentIsCertificate)
                 {
                     path = _attachmentService.GetCertificatePath(userLog.AttachmentId.Value);
                 }
-                else
+                else if (!string.IsNullOrEmpty(userLog.AttachmentFilename))
                 {
                     path = userLog.AttachmentFilename;
+                }
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    continue;
                 }
 
 

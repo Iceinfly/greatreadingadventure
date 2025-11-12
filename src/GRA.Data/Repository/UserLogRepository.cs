@@ -324,8 +324,17 @@ namespace GRA.Data.Repository
                         .AsNoTracking()
                         .Where(_ => _.Id == userLog.AttachmentId)
                         .SingleOrDefault();
-                    userLog.AttachmentFilename = attachment.FileName;
-                    userLog.AttachmentIsCertificate = attachment.IsCertificate.Value;
+
+                    if (attachment != null)
+                    {
+                        userLog.AttachmentFilename = attachment.FileName;
+                        userLog.AttachmentIsCertificate = attachment.IsCertificate ?? false;
+                    }
+                    else
+                    {
+                        userLog.AttachmentFilename = null;
+                        userLog.AttachmentIsCertificate = false;
+                    }
                 }
             }
 
