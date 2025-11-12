@@ -891,6 +891,7 @@ namespace GRA.Controllers.MissionControl
                 }
                 if (viewModel.TaskUploadFile != null)
                 {
+                    viewModel.Task.Filename = Path.GetFileName(viewModel.TaskUploadFile.FileName);
                     await using var fileStream = viewModel.TaskUploadFile.OpenReadStream();
                     await using var ms = new MemoryStream();
                     fileStream.CopyTo(ms);
