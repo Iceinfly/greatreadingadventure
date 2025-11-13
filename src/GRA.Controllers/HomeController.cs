@@ -329,7 +329,7 @@ namespace GRA.Controllers
                     foreach (var element in avatarElements)
                     {
                         var path = await _avatarService.GetElementPathAsync(element);
-                        var url = _pathResolver.ResolvePrivatePath(path);
+                        element.Filename = _pathResolver.ResolvePrivatePath(path);
                     }
                     viewModel.AvatarElements = avatarElements;
                 }
