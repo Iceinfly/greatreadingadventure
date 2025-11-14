@@ -680,8 +680,12 @@ namespace GRA.Domain.Service
                         {
                             Directory.CreateDirectory(itemPath);
                         }
-                        File.Copy(Path.Combine(itemAssetPath, "thumbnail.jpg"),
-                            Path.Combine(itemPath, "thumbnail.jpg"));
+                        const string ThumbnailFileName = "thumbnail.jpg";
+
+                        File.Copy(Path.Combine(itemAssetPath, ThumbnailFileName),
+                            Path.Combine(itemPath, ThumbnailFileName));
+
+                        item.Thumbnail = ThumbnailFileName;
                         await _avatarItemRepository.UpdateAsync(requestingUser, item);
                         if (colors != null)
                         {
