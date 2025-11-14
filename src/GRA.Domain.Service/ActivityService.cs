@@ -10,6 +10,7 @@ using GRA.Domain.Model;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using GRA.Domain.Service.Models;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stubble.Core.Builders;
@@ -40,6 +41,7 @@ namespace GRA.Domain.Service
         private readonly IProgramRepository _programRepository;
         private readonly IRequiredQuestionnaireRepository _requiredQuestionnaireRepository;
         private readonly SiteLookupService _siteLookupService;
+        private readonly IStringLocalizer<Resources.Shared> _sharedLocalizer;
         private readonly ITriggerRepository _triggerRepository;
         private readonly IUserLogRepository _userLogRepository;
         private readonly IUserRepository _userRepository;
@@ -65,6 +67,7 @@ namespace GRA.Domain.Service
             IPointTranslationRepository pointTranslationRepository,
             IProgramRepository programRepository,
             IRequiredQuestionnaireRepository requiredQuestionnaireRepository,
+            IStringLocalizer<Resources.Shared> sharedLocalizer,
             ITriggerRepository triggerRepository,
             IUserContextProvider userContext,
             IUserLogRepository userLogRepository,
@@ -99,6 +102,7 @@ namespace GRA.Domain.Service
             ArgumentNullException.ThrowIfNull(prizeWinnerService);
             ArgumentNullException.ThrowIfNull(programRepository);
             ArgumentNullException.ThrowIfNull(requiredQuestionnaireRepository);
+            ArgumentNullException.ThrowIfNull(sharedLocalizer);
             ArgumentNullException.ThrowIfNull(siteLookupService);
             ArgumentNullException.ThrowIfNull(triggerRepository);
             ArgumentNullException.ThrowIfNull(userLogRepository);
@@ -128,6 +132,7 @@ namespace GRA.Domain.Service
             _prizeWinnerService = prizeWinnerService;
             _programRepository = programRepository;
             _requiredQuestionnaireRepository = requiredQuestionnaireRepository;
+            _sharedLocalizer = sharedLocalizer;
             _siteLookupService = siteLookupService;
             _triggerRepository = triggerRepository;
             _userLogRepository = userLogRepository;
@@ -178,7 +183,9 @@ namespace GRA.Domain.Service
             if (await _bookRepository.UserHasBookAsync(userId, addedBook.Id))
             {
                 serviceResult.Status = ServiceResultStatus.Warning;
-                serviceResult.Message = $"The book <strong><em>{addedBook.Title}</em></strong> by <strong>{addedBook.Author}</strong> is already on the booklist.";
+                serviceResult.Message = _sharedLocalizer[Annotations.Validate.BookAlreadyAdded,
+                    addedBook.Title,
+                    addedBook.Author];
                 serviceResult.Data = addedBook.Id;
             }
             else
@@ -191,7 +198,9 @@ namespace GRA.Domain.Service
                     var notification = new Notification
                     {
                         UserId = userId,
-                        Text = $"The book <strong><em>{book.Title}</em></strong> by <strong>{book.Author}</strong> was added to your book list."
+                        Text = _sharedLocalizer[Annotations.Info.BookAdded,
+                            book.Title,
+                            book.Author]
                     };
 
                     await _notificationRepository.AddSaveAsync(authUserId, notification);
@@ -712,7 +721,8 @@ namespace GRA.Domain.Service
             if (await _triggerRepository
                 .GetByCodeAsync(GetCurrentSiteId(), secretCode, true) == null)
             {
-                throw new GraException($"<strong>{secretCode}</strong> is not a valid code.");
+                throw new GraException(_sharedLocalizer[Annotations.Validate.SecretCodeInvalid,
+                    secretCode]);
             }
 
             var codeApplied = false;
@@ -768,7 +778,8 @@ namespace GRA.Domain.Service
 
             var trigger = await _triggerRepository.GetByCodeAsync(GetCurrentSiteId(), secretCode,
                 true)
-                ?? throw new GraException($"<strong>{secretCode}</strong> is not a valid code.");
+                ?? throw new GraException(
+                    _sharedLocalizer[Annotations.Validate.SecretCodeInvalid, secretCode]);
 
             var pointsAwarded = trigger.AwardPoints;
 
@@ -793,7 +804,10 @@ namespace GRA.Domain.Service
                 }
                 else
                 {
-                    throw new GraException($"You already entered the code <strong>{secretCode}</strong> on <strong>{alreadyDone:d}</strong>!");
+                    throw new GraException(
+                        _sharedLocalizer[Annotations.Validate.SecretCodeAlreadyLogged,
+                            secretCode,
+                            alreadyDone.Value.ToShortDateString()]);
                 }
             }
 
