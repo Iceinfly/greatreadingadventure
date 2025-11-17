@@ -53,9 +53,26 @@ namespace GRA.Domain.Service
             return await _badgeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), result);
         }
 
-        public string GetBadgePath(int siteId, int badgeId) =>
-            $"site{siteId}/badges/badge{badgeId}.png";
+        public string GetBadgePath(int siteId, int badgeId)
+        {
+            var content = _pathResolver.ResolveContentFilePath();
+            var badgeDir = Path.Combine(content, $"site{siteId}", BadgePath);
 
+            var extensions = new[] { ".png", ".jpg", ".jpeg" };
+
+            foreach (var extension in extensions)
+            {
+                var filename = $"badge{badgeId}{extension}";
+                var fullPath = Path.Combine(badgeDir, filename);
+
+                if (File.Exists(fullPath))
+                {
+                    return $"site{siteId}/{BadgePath}/{filename}";
+                }
+            }
+
+            return $"site{siteId}/{BadgePath}/badge{badgeId}.png";
+        }
 
         public async Task<Badge> GetByIdAsync(int badgeId)
         {
