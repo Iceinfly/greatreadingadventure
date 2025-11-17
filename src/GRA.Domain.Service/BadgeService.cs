@@ -161,8 +161,8 @@ namespace GRA.Domain.Service
             "CA1308:Normalize strings to uppercase",
             Justification = "Normalize filenames to lowercase")]
         private async Task<string> WriteBadgeFileAsync(Badge badge,
-  byte[] imageFile,
-  ImageType? imageType)
+            byte[] imageFile,
+            ImageType? imageType)
         {
             const string extension = ".png";
             string filename = $"badge{badge.Id}{extension}";
@@ -171,22 +171,22 @@ namespace GRA.Domain.Service
             try
             {
                 using var image = Image.Load(imageFile);
-
                 var (IsSet, SetValue) = await _siteLookupService.GetSiteSettingIntAsync(
-                  GetCurrentSiteId(),
-                  SiteSettingKey.Badges.MaxDimension);
+                    GetCurrentSiteId(),
+                    SiteSettingKey.Badges.MaxDimension);
 
-                int maxDimension = IsSet ? SetValue : DefaultMaxDimension;
+                int maxDimension = IsSet 
+                    ? SetValue
+                    : DefaultMaxDimension;
 
                 if (image.Width > maxDimension || image.Height > maxDimension)
                 {
                     _logger.LogInformation("Resizing badge file {BadgeFile}", fullFilePath);
                     var sw = Stopwatch.StartNew();
 
-                    image.Mutate(_ => _.Resize(
-                      maxDimension,
-                      maxDimension,
-                      KnownResamplers.Lanczos3));
+                    image.Mutate(_ => _.Resize(maxDimension,
+                        maxDimension,
+                        KnownResamplers.Lanczos3));
 
                     if (image.Metadata != null)
                     {
@@ -201,8 +201,8 @@ namespace GRA.Domain.Service
                         SkipMetadata = true
                     });
                     _logger.LogInformation("Image resize and save of {Filename} took {Elapsed} ms",
-                      filename,
-                      sw.ElapsedMilliseconds);
+                        filename,
+                        sw.ElapsedMilliseconds);
                 }
                 else
                 {
@@ -225,13 +225,12 @@ namespace GRA.Domain.Service
             catch (UnknownImageFormatException uifex)
             {
                 _logger.LogError(uifex,
-                  "Unknown image format exception on file {Filename}: {ErrorMessage}",
-                  filename,
-                  uifex.Message);
+                    "Unknown image format exception on file {Filename}: {ErrorMessage}",
+                    filename,
+                    uifex.Message);
                 throw new GraException("Unknown image type, please upload a JPEG or PNG image.", 
                     uifex);
             }
-
             return GetUrlPath(filename);
         }
     }

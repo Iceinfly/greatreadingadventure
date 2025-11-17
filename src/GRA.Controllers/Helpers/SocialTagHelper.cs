@@ -139,9 +139,9 @@ namespace GRA.Controllers.Helpers
         }
 
         private void AddFacebookTags(TagHelperOutput output,
-        Site site,
-        string title,
-        string description)
+            Site site,
+            string title,
+            string description)
         {
             var currentCulture = _userContextProvider.GetCurrentCulture();
             var ogLink = GetSiteLink(site, currentCulture);
@@ -163,9 +163,8 @@ namespace GRA.Controllers.Helpers
 
             if (currentCulture != null)
             {
-                output.Content.AppendHtml(MetaProperty(
-                  "og:locale",
-                  currentCulture.Name.Replace('-', '_')));
+                output.Content.AppendHtml(MetaProperty("og:locale",
+                    currentCulture.Name.Replace('-', '_')));
                 output.Content.AppendHtml(Environment.NewLine);
 
                 if (_localizationOptions != null)
@@ -174,8 +173,7 @@ namespace GRA.Controllers.Helpers
                     {
                         if (l10n.Name != currentCulture.Name)
                         {
-                            output.Content.AppendHtml(MetaProperty(
-                              "og:locale:alternate",
+                            output.Content.AppendHtml(MetaProperty("og:locale:alternate",
                               l10n.Name.Replace('-', '_')));
                             output.Content.AppendHtml(Environment.NewLine);
                         }
@@ -219,12 +217,10 @@ namespace GRA.Controllers.Helpers
                 output.Content.AppendHtml(Environment.NewLine);
                 if (Data.ImageWidth != default && Data.ImageHeight != default)
                 {
-                    output.Content.AppendHtml(MetaProperty(
-                      "og:image:width",
+                    output.Content.AppendHtml(MetaProperty("og:image:width",
                       Data.ImageWidth.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
-                    output.Content.AppendHtml(MetaProperty(
-                      "og:image:height",
+                    output.Content.AppendHtml(MetaProperty("og:image:height",
                       Data.ImageHeight.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
                 }

@@ -1071,7 +1071,7 @@ namespace GRA.Controllers.MissionControl
                 }
                 catch (GraException gex)
                 {
-                    ShowAlertDanger($"Unable to {(model.Approve ? "Approve" : "Unapprove")} program: ",
+                    ShowAlertDanger($"Unable to {(model.Approve ? "Approve" : "Unapprove")} program: ", 
                         gex);
                     return RedirectToAction(nameof(Performers));
                 }

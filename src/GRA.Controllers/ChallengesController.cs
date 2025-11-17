@@ -127,7 +127,7 @@ namespace GRA.Controllers
 
             bool isActive = AuthUser.Identity.IsAuthenticated && siteStage == SiteStage.ProgramOpen;
             bool showCompleted = siteStage == SiteStage.ProgramOpen
-              || siteStage == SiteStage.ProgramEnded;
+                || siteStage == SiteStage.ProgramEnded;
 
             var viewModel = new ChallengeDetailViewModel
             {
@@ -140,15 +140,14 @@ namespace GRA.Controllers
                 Tasks = new List<TaskDetailViewModel>(),
                 IsBadgeEarning = challenge.BadgeId.HasValue,
                 PointCountAndDescription = challenge.PointsAwarded == 1
-                ? _sharedLocalizer[Annotations.Info.PointSingular, challenge.PointsAwarded]
-                : _sharedLocalizer[Annotations.Info.PointsPlural, challenge.PointsAwarded],
+                    ? _sharedLocalizer[Annotations.Info.PointSingular, challenge.PointsAwarded]
+                    : _sharedLocalizer[Annotations.Info.PointsPlural, challenge.PointsAwarded],
                 TaskCountAndDescription = challenge.TasksToComplete == 1
-                ? _sharedLocalizer[Annotations.Info.TaskSingular, challenge.TasksToComplete]
-                : _sharedLocalizer[Annotations.Info.TasksPlural, challenge.TasksToComplete]
+                    ? _sharedLocalizer[Annotations.Info.TaskSingular, challenge.TasksToComplete]
+                    : _sharedLocalizer[Annotations.Info.TasksPlural, challenge.TasksToComplete]
             };
 
             var siteUrl = await _siteLookupService.GetSiteLinkAsync(GetCurrentSiteId());
-
             foreach (var task in challenge.Tasks)
             {
                 var taskModel = new TaskDetailViewModel

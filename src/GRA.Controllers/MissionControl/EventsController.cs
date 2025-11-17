@@ -859,7 +859,8 @@ namespace GRA.Controllers.MissionControl
 
                 if (graEvent.Challenge?.BadgeId != null)
                 {
-                    var path = _badgeService.GetBadgePath(graEvent.Challenge.SiteId, graEvent.Challenge.BadgeId.Value);
+                    var path = _badgeService
+                        .GetBadgePath(graEvent.Challenge.SiteId, graEvent.Challenge.BadgeId.Value);
                     graEvent.Challenge.BadgeFilename = _pathResolver.ResolveContentPath(path);
                 }
 
