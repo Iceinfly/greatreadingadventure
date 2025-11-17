@@ -17,6 +17,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - View of and access to historical report output
 - QR code generation ability
 - Spanish localization for jQuery validation messages
+- News Post pinning
+- Email address validation
+- Cannot be emailed property to users
 - Participant personal point goal
 - Join codes for tracking signups
 - Ability to override activity button text
@@ -34,6 +37,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - Display of modals after Bootstrap 5.3 upgrade
 - Performer program cost to display in currency format
+- Email reminder signup source being editable in html
 - Missing translations for secret codes, books and events
 - Password change confirmation not functioning
 - Challenge category multiselect formatting for participants
