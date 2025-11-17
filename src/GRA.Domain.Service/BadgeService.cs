@@ -184,6 +184,7 @@ namespace GRA.Domain.Service
             string extension = imageType.HasValue
                 ? "." + imageType.ToString().ToLowerInvariant()
                 : Path.GetExtension(badge.Filename).ToLowerInvariant();
+
             string filename = $"badge{badge.Id}{extension}";
             string fullFilePath = GetFilePath(filename);
 
@@ -202,7 +203,6 @@ namespace GRA.Domain.Service
                 {
                     _logger.LogInformation("Resizing badge file {BadgeFile}", fullFilePath);
                     var sw = Stopwatch.StartNew();
-
                     image.Mutate(_ => _.Resize(maxDimension,
                         maxDimension,
                         KnownResamplers.Lanczos3));
@@ -213,7 +213,6 @@ namespace GRA.Domain.Service
                         image.Metadata.IccProfile = null;
                         image.Metadata.IptcProfile = null;
                     }
-
                     switch (extension)
                     {
                         case "jpg":
@@ -223,6 +222,7 @@ namespace GRA.Domain.Service
                                 Quality = 77
                             });
                             break;
+
                         default:
                             await image.SaveAsPngAsync(fullFilePath, new PngEncoder
                             {

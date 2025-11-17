@@ -144,8 +144,8 @@ namespace GRA.Domain.Service
         }
 
         private async Task<string> WriteAttachmentFile(Attachment attachment,
-              string attachmentType,
-              byte[] file)
+            string attachmentType,
+            byte[] file)
         {
             if (attachmentType != Certificates)
             {

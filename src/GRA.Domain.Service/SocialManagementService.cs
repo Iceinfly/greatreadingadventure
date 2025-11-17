@@ -88,6 +88,7 @@ namespace GRA.Domain.Service
 
             await ClearSocialCache(socialHeader.Id, social.LanguageId);
         }
+
         public async Task<int?> DeleteSocial(int socialHeaderId, int languageId)
         {
             VerifyManagementPermission();
@@ -95,7 +96,7 @@ namespace GRA.Domain.Service
             var socials = await _socialRepository.GetByHeaderIdsAsync(new[] { socialHeaderId });
 
             var toDelete = socials
-              .Single(_ => _.SocialHeaderId == socialHeaderId && _.LanguageId == languageId);
+                .Single(_ => _.SocialHeaderId == socialHeaderId && _.LanguageId == languageId);
 
             if (!string.IsNullOrWhiteSpace(toDelete.ImageLink))
             {

@@ -1038,7 +1038,7 @@ namespace GRA.Domain.Service
             return await _psPerformerRepository.GetIndexListAsync(onlyApproved);
         }
 
-        public async Task<int> GetPerformerProgramCountAsync(int performerId,
+        public async Task<int> GetPerformerProgramCountAsync(int performerId, 
             bool onlyApproved = false)
         {
             if (!HasPermission(Permission.ManagePerformers)
@@ -1455,7 +1455,7 @@ namespace GRA.Domain.Service
             await _psPerformerRepository.UpdateSaveAsync(authId, performer);
         }
 
-        public async Task SetProgramApprovedAsync(int programId, bool isApproved)
+        public async Task SetProgramApprovedAsync (int programId, bool isApproved)
         {
             VerifyManagementPermission();
 
