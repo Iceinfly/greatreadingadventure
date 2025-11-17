@@ -164,7 +164,9 @@ namespace GRA.Domain.Service
             byte[] imageFile,
             ImageType? imageType)
         {
-            const string extension = ".png";
+            string extension = imageType.HasValue
+                ? "." + imageType.ToString().ToLowerInvariant()
+                : Path.GetExtension(badge.Filename).ToLowerInvariant();
             string filename = $"badge{badge.Id}{extension}";
             string fullFilePath = GetFilePath(filename);
 
@@ -175,7 +177,7 @@ namespace GRA.Domain.Service
                     GetCurrentSiteId(),
                     SiteSettingKey.Badges.MaxDimension);
 
-                int maxDimension = IsSet 
+                int maxDimension = IsSet
                     ? SetValue
                     : DefaultMaxDimension;
 
@@ -195,11 +197,23 @@ namespace GRA.Domain.Service
                         image.Metadata.IptcProfile = null;
                     }
 
-                    await image.SaveAsPngAsync(fullFilePath, new PngEncoder
+                    switch (extension)
                     {
-                        CompressionLevel = PngCompressionLevel.BestCompression,
-                        SkipMetadata = true
-                    });
+                        case "jpg":
+                        case "jpeg":
+                            await image.SaveAsJpegAsync(fullFilePath, new JpegEncoder
+                            {
+                                Quality = 77
+                            });
+                            break;
+                        default:
+                            await image.SaveAsPngAsync(fullFilePath, new PngEncoder
+                            {
+                                CompressionLevel = PngCompressionLevel.BestCompression,
+                                SkipMetadata = true
+                            });
+                            break;
+                    }
                     _logger.LogInformation("Image resize and save of {Filename} took {Elapsed} ms",
                         filename,
                         sw.ElapsedMilliseconds);
@@ -207,19 +221,7 @@ namespace GRA.Domain.Service
                 else
                 {
                     _logger.LogDebug("Writing out badge file {BadgeFile}", fullFilePath);
-
-                    using var image2 = Image.Load(imageFile);
-                    if (image2.Metadata != null)
-                    {
-                        image2.Metadata.ExifProfile = null;
-                        image2.Metadata.IccProfile = null;
-                        image2.Metadata.IptcProfile = null;
-                    }
-                    await image2.SaveAsPngAsync(fullFilePath, new PngEncoder
-                    {
-                        CompressionLevel = PngCompressionLevel.BestCompression,
-                        SkipMetadata = true
-                    });
+                    File.WriteAllBytes(fullFilePath, imageFile);
                 }
             }
             catch (UnknownImageFormatException uifex)
