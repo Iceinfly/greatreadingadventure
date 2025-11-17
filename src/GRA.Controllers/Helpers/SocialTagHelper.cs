@@ -174,7 +174,7 @@ namespace GRA.Controllers.Helpers
                         if (l10n.Name != currentCulture.Name)
                         {
                             output.Content.AppendHtml(MetaProperty("og:locale:alternate",
-                              l10n.Name.Replace('-', '_')));
+                                l10n.Name.Replace('-', '_')));
                             output.Content.AppendHtml(Environment.NewLine);
                         }
                     }
@@ -218,10 +218,10 @@ namespace GRA.Controllers.Helpers
                 if (Data.ImageWidth != default && Data.ImageHeight != default)
                 {
                     output.Content.AppendHtml(MetaProperty("og:image:width",
-                      Data.ImageWidth.ToString(CultureInfo.InvariantCulture)));
+                        Data.ImageWidth.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
                     output.Content.AppendHtml(MetaProperty("og:image:height",
-                      Data.ImageHeight.ToString(CultureInfo.InvariantCulture)));
+                        Data.ImageHeight.ToString(CultureInfo.InvariantCulture)));
                     output.Content.AppendHtml(Environment.NewLine);
                 }
             }

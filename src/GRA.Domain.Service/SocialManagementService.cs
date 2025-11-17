@@ -292,7 +292,7 @@ namespace GRA.Domain.Service
                 .ResolveContentPath($"site{GetCurrentSiteId()}/{SocialPath}/{filename}");
         }
 
-        private (string filename, int ImageWidth, int ImageHeight) HandleSocialImage(
+        private (string ImageLink, int ImageWidth, int ImageHeight) HandleSocialImage(
             string filename,
             byte[] imageBytes)
         {
