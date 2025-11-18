@@ -782,7 +782,6 @@ namespace GRA.Controllers.MissionControl
                                 existing.AltText = model.BadgeAltText;
                                 await _badgeService.ReplaceBadgeFileAsync(existing, null, null);
                             }
-                            existing.Filename = Path.GetFileName(model.BadgePath);
                             existing.AltText = model.BadgeAltText;
                             await _badgeService.ReplaceBadgeFileAsync(existing,
                                 badgeBytes,

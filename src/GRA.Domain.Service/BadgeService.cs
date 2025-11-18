@@ -8,6 +8,7 @@ using GRA.Domain.Model;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Asn1.Cmp;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
@@ -107,9 +108,21 @@ namespace GRA.Domain.Service
 
             if (imageFile != null)
             {
-                if (File.Exists(existingBadge.Filename))
+                var content = _pathResolver.ResolveContentFilePath();
+                var badgeDir = Path.Combine(content,
+                    $"site{existingBadge.SiteId}",
+                    BadgePath);
+
+                var extensions = new[] { ".png", ".jpg", ".jpeg" };
+
+                foreach (var extension in extensions)
                 {
-                    File.Delete(existingBadge.Filename);
+                    var path = Path.Combine(badgeDir, $"badge{existingBadge.Id}{extension}");
+
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
                 }
 
                 var imageType = ImageType.Png;
@@ -129,7 +142,7 @@ namespace GRA.Domain.Service
 
                 await WriteBadgeFileAsync(existingBadge, imageFile, imageType);
             }
-            badge.AltText = badge.AltText?.Trim();
+            existingBadge.AltText = badge.AltText?.Trim();
             return await _badgeRepository.UpdateSaveAsync(GetClaimId(ClaimType.UserId), badge);
         }
 
