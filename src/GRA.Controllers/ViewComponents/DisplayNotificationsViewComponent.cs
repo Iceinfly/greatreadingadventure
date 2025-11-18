@@ -21,6 +21,7 @@ namespace GRA.Controllers.ViewComponents
         private readonly IPathResolver _pathResolver;
         private readonly IHtmlLocalizer<Resources.Shared> _sharedHtmlLocalizer;
         private readonly IStringLocalizer<Resources.Shared> _sharedLocalizer;
+
         public DisplayNotificationsViewComponent(IPathResolver pathResolver,
             IStringLocalizer<Resources.Shared> sharedLocalizer,
             IHtmlLocalizer<Resources.Shared> sharedHtmlLocalizer,

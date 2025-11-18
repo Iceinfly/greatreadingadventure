@@ -670,7 +670,6 @@ namespace GRA.Controllers
                     continue;
                 }
 
-
                 var item = new AttachmentItemViewModel
                 {
                     AttachmentFilename
@@ -1577,7 +1576,7 @@ namespace GRA.Controllers
                 && !EmailValidator.Validate(model.User.Email.Trim()))
             {
                 ModelState.AddModelError("User.Email",
-                    _sharedLocalizer[Annotations.Validate.Email, 
+                    _sharedLocalizer[Annotations.Validate.Email,
                         _sharedLocalizer[DisplayNames.EmailAddress]]);
             }
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))

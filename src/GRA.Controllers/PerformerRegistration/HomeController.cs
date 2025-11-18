@@ -246,11 +246,10 @@ namespace GRA.Controllers.PerformerRegistration
             performerImages.ForEach(img =>
             {
                 var path = _performerSchedulingService.GetPerformerImagePath(
-                    siteId, 
+                    siteId,
                     img.Filename);
                 img.Filename = _pathResolver.ResolveContentPath(path);
             });
-
 
             model.IsEditable = schedulingStage == PsSchedulingStage.RegistrationOpen;
             model.MaxUploadMB = MaxUploadMB;

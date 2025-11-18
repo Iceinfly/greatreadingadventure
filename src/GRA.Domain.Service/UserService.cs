@@ -1386,9 +1386,8 @@ namespace GRA.Domain.Service
                     currentEntity.FirstName = userToUpdate.FirstName?.Trim();
                     currentEntity.IsAdmin = await UserHasRoles(userToUpdate.Id);
 
-
                     var newEmail = userToUpdate.Email?.Trim();
-                    if (currentEntity.CannotBeEmailed && !string.Equals(currentEntity.Email, 
+                    if (currentEntity.CannotBeEmailed && !string.Equals(currentEntity.Email,
                         newEmail,
                         StringComparison.OrdinalIgnoreCase))
                     {
@@ -1757,7 +1756,7 @@ namespace GRA.Domain.Service
                 currentEntity.SystemName = null;
 
                 var newEmail = userToUpdate.Email?.Trim();
-                if (currentEntity.CannotBeEmailed && !string.Equals(currentEntity.Email, newEmail, 
+                if (currentEntity.CannotBeEmailed && !string.Equals(currentEntity.Email, newEmail,
                     StringComparison.OrdinalIgnoreCase))
                 {
                     currentEntity.CannotBeEmailed = false;

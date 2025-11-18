@@ -456,7 +456,7 @@ namespace GRA.Controllers.MissionControl
             var viewModel = new TriggersDetailViewModel
             {
                 Action = "Edit",
-                AwardsAttachment = trigger.AwardAttachmentId.HasValue || 
+                AwardsAttachment = trigger.AwardAttachmentId.HasValue ||
                 !string.IsNullOrWhiteSpace(trigger.AwardAttachmentFilename),
                 AwardsMail = !string.IsNullOrWhiteSpace(trigger.AwardMailSubject),
                 AwardsPrize = !string.IsNullOrWhiteSpace(trigger.AwardPrizeName),

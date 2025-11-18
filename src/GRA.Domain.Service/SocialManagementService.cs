@@ -145,6 +145,7 @@ namespace GRA.Domain.Service
 
             return returnValue;
         }
+
         public async Task<SocialHeader> GetHeaderAndSocialAsync(int headerId, int languageId)
         {
             VerifyManagementPermission();

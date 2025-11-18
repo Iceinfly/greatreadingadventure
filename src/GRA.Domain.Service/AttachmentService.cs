@@ -123,6 +123,7 @@ namespace GRA.Domain.Service
 
         private string BuildAttachmentRootPath(int siteId)
             => $"site{siteId}/{AttachmentPath}";
+
         private async Task RemoveAttachment(int attachmentId)
         {
             var attachment = await _attachmentRepository.GetByIdAsync(attachmentId);

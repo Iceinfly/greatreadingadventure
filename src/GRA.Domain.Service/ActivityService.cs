@@ -19,10 +19,10 @@ namespace GRA.Domain.Service
 {
     public class ActivityService : Abstract.BaseUserService<UserService>
     {
-        private readonly AvatarService _avatarService;
         private readonly IAttachmentRepository _attachmentRepository;
         private readonly IAvatarBundleRepository _avatarBundleRepository;
         private readonly IAvatarItemRepository _avatarItemRepository;
+        private readonly AvatarService _avatarService;
         private readonly IBadgeRepository _badgeRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IGraCache _cache;
@@ -40,8 +40,8 @@ namespace GRA.Domain.Service
         private readonly PrizeWinnerService _prizeWinnerService;
         private readonly IProgramRepository _programRepository;
         private readonly IRequiredQuestionnaireRepository _requiredQuestionnaireRepository;
-        private readonly SiteLookupService _siteLookupService;
         private readonly IStringLocalizer<Resources.Shared> _sharedLocalizer;
+        private readonly SiteLookupService _siteLookupService;
         private readonly ITriggerRepository _triggerRepository;
         private readonly IUserLogRepository _userLogRepository;
         private readonly IUserRepository _userRepository;
@@ -1593,9 +1593,9 @@ namespace GRA.Domain.Service
 
                 var first = bundle.AvatarItems.FirstOrDefault();
 
-                var badgeThumbnailPath = first == null ? null 
+                var badgeThumbnailPath = first == null ? null
                     : _avatarService.GetItemThumbnailPath(first);
-                
+
                 var notification = new Notification
                 {
                     PointsEarned = 0,
@@ -1718,7 +1718,6 @@ namespace GRA.Domain.Service
         {
             int site = siteId ?? GetCurrentSiteId();
             return $"site{site}/attachments/certificates/certificate{attachmentId}.pdf";
-
         }
 
         private async Task<int> GetMaximumAllowedActivityAsync(int siteId)

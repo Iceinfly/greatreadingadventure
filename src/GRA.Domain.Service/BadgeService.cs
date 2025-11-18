@@ -260,7 +260,7 @@ namespace GRA.Domain.Service
                     "Unknown image format exception on file {Filename}: {ErrorMessage}",
                     filename,
                     uifex.Message);
-                throw new GraException("Unknown image type, please upload a JPEG or PNG image.", 
+                throw new GraException("Unknown image type, please upload a JPEG or PNG image.",
                     uifex);
             }
             return GetUrlPath(filename);

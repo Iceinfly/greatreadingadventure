@@ -116,9 +116,6 @@ namespace GRA.Domain.Service
             return currentLayer;
         }
 
-        private string BuildItemRootPath(int siteId, int layerId, int itemId) =>
-            $"site{siteId}/avatars/layer{layerId}/item{itemId}/";
-
         public async Task DeleteItemAsync(int id)
         {
             VerifyManagementPermission();
@@ -232,18 +229,18 @@ namespace GRA.Domain.Service
             return BuildItemRootPath(site, layerId, element.AvatarItemId) + fileName;
         }
 
+        public async Task<AvatarItem> GetItemByIdAsync(int id)
+        {
+            VerifyManagementPermission();
+            return await _avatarItemRepository.GetByIdAsync(id);
+        }
+
         public async Task<AvatarItem> GetItemByLayerPositionSortOrderAsync(int layerPosition,
             int sortOrder)
         {
             VerifyManagementPermission();
             return await _avatarItemRepository.GetByLayerPositionSortOrderAsync(layerPosition,
                 sortOrder);
-        }
-
-        public async Task<AvatarItem> GetItemByIdAsync(int id)
-        {
-            VerifyManagementPermission();
-            return await _avatarItemRepository.GetByIdAsync(id);
         }
 
         public async Task<ICollection<AvatarItem>> GetItemsByIdsAsync(List<int> ids)
@@ -947,7 +944,6 @@ namespace GRA.Domain.Service
                 {
                     if (currentText == null)
                     {
-
                         textsToAdd.Add(text);
                     }
                     else
@@ -1014,7 +1010,6 @@ namespace GRA.Domain.Service
                 {
                     if (currentText == null)
                     {
-
                         textsToAdd.Add(text);
                     }
                     else
@@ -1118,5 +1113,8 @@ namespace GRA.Domain.Service
             }
             await _avatarElementRepository.SetUserAvatarAsync(activeUserId, elementList);
         }
+
+        private string BuildItemRootPath(int siteId, int layerId, int itemId) =>
+                                                                                                                                                                                                                                                                                                            $"site{siteId}/avatars/layer{layerId}/item{itemId}/";
     }
 }

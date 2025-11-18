@@ -78,32 +78,6 @@ namespace GRA.Data.Repository
                 .SingleOrDefaultAsync();
         }
 
-        private static void NormalizeStorage(Social social)
-        {
-            if (social == null) 
-            {
-                return;
-            }
-
-            social.Title = social.Title?.Trim();
-            social.Description = social.Description?.Trim();
-
-            if (!string.IsNullOrWhiteSpace(social.ImageLink))
-            {
-                social.ImageLink = System.IO.Path.GetFileName(social.ImageLink.Trim());
-            }
-
-            if (social.ImageWidth < 0) 
-            {
-                social.ImageWidth = 0;
-            }
-            if (social.ImageHeight < 0)
-            { 
-                social.ImageHeight = 0; 
-            }
-        }
-
-
         public async Task RemoveSaveAsync(int headerId, int languageId)
         {
             var entity = await DbSet
@@ -127,6 +101,30 @@ namespace GRA.Data.Repository
             return UpdateSaveInternalAsync(social);
         }
 
+        private static void NormalizeStorage(Social social)
+        {
+            if (social == null)
+            {
+                return;
+            }
+
+            social.Title = social.Title?.Trim();
+            social.Description = social.Description?.Trim();
+
+            if (!string.IsNullOrWhiteSpace(social.ImageLink))
+            {
+                social.ImageLink = System.IO.Path.GetFileName(social.ImageLink.Trim());
+            }
+
+            if (social.ImageWidth < 0)
+            {
+                social.ImageWidth = 0;
+            }
+            if (social.ImageHeight < 0)
+            {
+                social.ImageHeight = 0;
+            }
+        }
         private async Task<Social> UpdateSaveInternalAsync(Social social)
         {
             NormalizeStorage(social);

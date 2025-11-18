@@ -555,6 +555,9 @@ namespace GRA.Domain.Service
             return await _challengeTaskRepository.GetByIdAsync(id);
         }
 
+        public string GetTaskPath(int siteId, int taskId)
+            => $"site{siteId}/{TaskFilesPath}/task{taskId}.png";
+
         public async Task<int> GetTotalChallengeCount()
         {
             return await _challengeRepository.GetChallengeCountAsync(new ChallengeFilter
@@ -727,10 +730,6 @@ namespace GRA.Domain.Service
                 await AddBadgeFileData(challenge);
             }
         }
-
-        public string GetTaskPath(int siteId, int taskId)
-            => $"site{siteId}/{TaskFilesPath}/task{taskId}.png";
-
         private string GetTaskFilePath(string filename)
         {
             string contentDir = _pathResolver.ResolveContentFilePath();
