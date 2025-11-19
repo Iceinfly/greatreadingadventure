@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using GRA.Abstract;
 using GRA.Domain.Model;
@@ -555,8 +556,14 @@ namespace GRA.Domain.Service
             return await _challengeTaskRepository.GetByIdAsync(id);
         }
 
-        public string GetTaskPath(int siteId, int taskId)
-            => $"site{siteId}/{TaskFilesPath}/task{taskId}.png";
+        public string GetTaskPath(int siteId, ChallengeTask task)
+        {
+            ArgumentNullException.ThrowIfNull(task);
+
+            var storageFileName = NormalizeTaskFileName(task.Id, task.Filename);
+
+            return $"site{siteId}/{TaskFilesPath}/{storageFileName}";
+        }
 
         public async Task<int> GetTotalChallengeCount()
         {
@@ -637,6 +644,18 @@ namespace GRA.Domain.Service
             _logger.LogError("User {AuthenticatedUserId} doesn't have permission to view all challenges.",
                 authUserId);
             throw new GraException("Permission denied.");
+        }
+
+        private static string NormalizeTaskFileName(int taskId, string originalFileName)
+        {
+            var extension = Path.GetExtension(originalFileName)?.ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                extension = ".png";
+            }
+
+            return $"task{taskId}{extension}";
         }
 
         public async Task RemoveChallengeAsync(int challengeId)
@@ -730,25 +749,14 @@ namespace GRA.Domain.Service
                 await AddBadgeFileData(challenge);
             }
         }
-        private string GetTaskFilePath(string filename)
+        private string GetTaskFilePath(int siteId, ChallengeTask task)
         {
+            var storageFileName = NormalizeTaskFileName(task.Id, task.Filename);
             string contentDir = _pathResolver.ResolveContentFilePath();
-            contentDir = Path.Combine(contentDir, $"site{GetCurrentSiteId()}", TaskFilesPath);
-
-            if (!Directory.Exists(contentDir))
-            {
-                Directory.CreateDirectory(contentDir);
-            }
-            return Path.Combine(contentDir, filename);
-        }
-
-        private string GetTaskFilePathById(int siteId, int taskId)
-        {
-            var fileName = $"task{taskId}.png";
-            var contentDir = _pathResolver.ResolveContentFilePath();
             contentDir = Path.Combine(contentDir, $"site{siteId}", TaskFilesPath);
             Directory.CreateDirectory(contentDir);
-            return Path.Combine(contentDir, fileName);
+            
+            return Path.Combine(contentDir, storageFileName);
         }
 
         private string GetTaskUrlPath(string filename)
@@ -758,7 +766,7 @@ namespace GRA.Domain.Service
 
         private void RemoveTaskFile(ChallengeTask task)
         {
-            var filePath = GetTaskFilePathById(GetCurrentSiteId(), task.Id);
+            var filePath = GetTaskFilePath(GetCurrentSiteId(), task);
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -770,7 +778,7 @@ namespace GRA.Domain.Service
             Justification = "Normalize file extensions to lowercase")]
         private void WriteTaskFile(ChallengeTask task, byte[] taskFile)
         {
-            var fullPath = GetTaskFilePathById(GetCurrentSiteId(), task.Id);
+            var fullPath = GetTaskFilePath(GetCurrentSiteId(), task);
             File.WriteAllBytes(fullPath, taskFile);
         }
 

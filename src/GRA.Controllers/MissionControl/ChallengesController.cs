@@ -246,7 +246,7 @@ namespace GRA.Controllers.MissionControl
                     {
                         task.Description = CommonMark.CommonMarkConverter.Convert(task.Title);
                     }
-                    var path = _challengeService.GetTaskPath(challenge.SiteId, task.Id);
+                    var path = _challengeService.GetTaskPath(challenge.SiteId, task);
                     var contentPath = _pathResolver.ResolveContentPath(path);
                     task.Filename = $"{siteUrl}{contentPath}";
                 }
@@ -341,8 +341,14 @@ namespace GRA.Controllers.MissionControl
                     .GetTaskAsync((int)value);
                 if (!string.IsNullOrWhiteSpace(viewModel.Task.Filename))
                 {
-                    var contentPath = _pathResolver.ResolveContentPath(viewModel.Task.Filename);
-                    viewModel.TaskFilePath = $"{siteUrl}{contentPath}";
+                    var taskPath = _challengeService.GetTaskPath(
+                        viewModel.Challenge.SiteId, 
+                        viewModel.Task);
+
+                    var fullPath = _pathResolver.ResolveContentPath(taskPath);
+
+                    viewModel.TaskFilePath = $"{siteUrl}{fullPath}";
+
                 }
             }
             PageTitle = $"Edit Challenge - {viewModel.Challenge.Name}";
