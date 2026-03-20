@@ -23,8 +23,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Participant personal point goal
 - Join codes for tracking signups
 - Ability to override activity button text
+- Pruning inactive users
 - Staff login report
 - Info message when editing Point Translations with unchangeable properties
+- Database storage of banner image file name and alt text
 
 ## Changed
 
@@ -46,6 +48,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Challenge category multiselect formatting for participants
 - Join issues caused by setting a program or branch with an authorization code
 - Secret code field showing when it shouldn't in Mission Control activity logging
+- Single program not being selected when adding household members in Mission Control
+- Issue with delay upon each email send
+- Program editing ViewModel properties not being set after ModelState error
 
 ## [4.6.0] 2024-10-09
 
