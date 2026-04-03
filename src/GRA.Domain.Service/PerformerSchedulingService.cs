@@ -1911,7 +1911,7 @@ namespace GRA.Domain.Service
 
             if (File.Exists(fullPath))
             {
-                File.Delete(file);
+                File.Delete(fullPath);
             }
         }
 
