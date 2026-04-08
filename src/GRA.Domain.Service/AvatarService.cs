@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using GRA.Abstract;
 using GRA.Domain.Model;
@@ -12,7 +9,6 @@ using GRA.Domain.Model.Filters;
 using GRA.Domain.Repository;
 using GRA.Domain.Service.Abstract;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace GRA.Domain.Service
 {
@@ -23,23 +19,21 @@ namespace GRA.Domain.Service
         private readonly IAvatarElementRepository _avatarElementRepository;
         private readonly IAvatarItemRepository _avatarItemRepository;
         private readonly IAvatarLayerRepository _avatarLayerRepository;
-        private readonly IJobRepository _jobRepository;
         private readonly LanguageService _languageService;
         private readonly IPathResolver _pathResolver;
         private readonly ITriggerRepository _triggerRepository;
 
         public AvatarService(ILogger<AvatarService> logger,
-            GRA.Abstract.IDateTimeProvider dateTimeProvider,
+            IDateTimeProvider dateTimeProvider,
             IUserContextProvider userContextProvider,
             IAvatarBundleRepository avatarBundleRepository,
             IAvatarColorRepository avatarColorRepository,
             IAvatarElementRepository avatarElementRepository,
             IAvatarItemRepository avatarItemRepository,
             IAvatarLayerRepository avatarLayerRepository,
-            IJobRepository jobRepository,
-            LanguageService languageService,
+            IPathResolver pathResolver,
             ITriggerRepository triggerRepository,
-            IPathResolver pathResolver)
+            LanguageService languageService)
             : base(logger, dateTimeProvider, userContextProvider)
         {
             ArgumentNullException.ThrowIfNull(avatarBundleRepository);
@@ -47,7 +41,6 @@ namespace GRA.Domain.Service
             ArgumentNullException.ThrowIfNull(avatarElementRepository);
             ArgumentNullException.ThrowIfNull(avatarItemRepository);
             ArgumentNullException.ThrowIfNull(avatarLayerRepository);
-            ArgumentNullException.ThrowIfNull(jobRepository);
             ArgumentNullException.ThrowIfNull(languageService);
             ArgumentNullException.ThrowIfNull(pathResolver);
             ArgumentNullException.ThrowIfNull(triggerRepository);
@@ -57,7 +50,6 @@ namespace GRA.Domain.Service
             _avatarElementRepository = avatarElementRepository;
             _avatarItemRepository = avatarItemRepository;
             _avatarLayerRepository = avatarLayerRepository;
-            _jobRepository = jobRepository;
             _languageService = languageService;
             _pathResolver = pathResolver;
             _triggerRepository = triggerRepository;
@@ -95,25 +87,30 @@ namespace GRA.Domain.Service
             ArgumentNullException.ThrowIfNull(layer);
             VerifyManagementPermission();
             layer.SiteId = GetCurrentSiteId();
+
             var currentLayer = await _avatarLayerRepository.AddSaveAsync(
                 GetClaimId(ClaimType.UserId), layer);
 
-            foreach (var text in layer.Texts)
+            await _avatarLayerRepository.SaveAsync();
+
+            return currentLayer;
+        }
+
+        public async Task AddLayerTexts(int layerId,
+                    ICollection<AvatarLayerText> texts,
+            int version)
+        {
+            ArgumentNullException.ThrowIfNull(texts);
+            foreach (var text in texts)
             {
-                var languageId = await _languageService.GetLanguageIdAsync(text.Language);
+                var languageId = await _languageService
+                    .GetLanguageIdAsync(version == 1 ? text.Language : text.LanguageName);
                 if (languageId != default)
                 {
-                    await _avatarLayerRepository.AddAvatarLayerTextAsync(currentLayer.Id,
-                        languageId,
-                        text);
+                    await _avatarLayerRepository.AddAvatarLayerTextAsync(layerId, languageId, text);
                 }
             }
             await _avatarLayerRepository.SaveAsync();
-
-            var layerData = _avatarLayerRepository.GetNameAndLabelByLanguageId(currentLayer.Id,
-                await _languageService.GetDefaultLanguageIdAsync());
-            currentLayer.Name = layerData["Name"];
-            return currentLayer;
         }
 
         public async Task DeleteItemAsync(int id)
@@ -137,8 +134,7 @@ namespace GRA.Domain.Service
             await _avatarItemRepository.DecreaseSortPosition(GetCurrentSiteId(), id);
         }
 
-        public async Task<AvatarBundle> EditBundleAsync(AvatarBundle bundle,
-            List<int> itemIds)
+        public async Task<AvatarBundle> EditBundleAsync(AvatarBundle bundle, List<int> itemIds)
         {
             ArgumentNullException.ThrowIfNull(bundle);
             VerifyManagementPermission();
@@ -175,8 +171,7 @@ namespace GRA.Domain.Service
             return currentBundle;
         }
 
-        public async Task<ICollection<AvatarBundle>> GetAllBundlesAsync(
-            bool? unlockable = null)
+        public async Task<ICollection<AvatarBundle>> GetAllBundlesAsync(bool? unlockable)
         {
             VerifyManagementPermission();
             return await _avatarBundleRepository.GetAllAsync(GetCurrentSiteId(), unlockable);
@@ -383,7 +378,7 @@ namespace GRA.Domain.Service
                 {
                     var randomBundle = await _avatarBundleRepository
                         .GetRandomDefaultBundleAsync(siteId);
-                    bundleItems = randomBundle.ToList();
+                    bundleItems = [.. randomBundle];
                 }
                 var filePath = _pathResolver.ResolveContentPath($"site{siteId}/avatars/");
                 foreach (var layer in layers)
@@ -663,7 +658,7 @@ namespace GRA.Domain.Service
                             });
                             lastUpdateSent = (int)sw.Elapsed.TotalSeconds;
                         }
-
+                                Error = false
                         if (currentElement % 500 == 0)
                         {
                             await _avatarElementRepository.SaveAsync();
@@ -841,6 +836,10 @@ namespace GRA.Domain.Service
             }
         }
 
+                };
+            }
+        }
+
         public async Task IncreaseItemSortAsync(int id)
         {
             VerifyManagementPermission();
@@ -936,9 +935,8 @@ namespace GRA.Domain.Service
                 text.AltText = text.AltText?.Trim();
 
                 var currentText = currentTexts
-                    .Where(_ => _.AvatarColorId == text.AvatarColorId
-                        && _.LanguageId == text.LanguageId)
-                    .SingleOrDefault();
+                    .SingleOrDefault(_ => _.AvatarColorId == text.AvatarColorId
+                        && _.LanguageId == text.LanguageId);
 
                 if (!string.IsNullOrWhiteSpace(text.AltText))
                 {
@@ -1002,9 +1000,8 @@ namespace GRA.Domain.Service
                 text.AltText = text.AltText?.Trim();
 
                 var currentText = currentTexts
-                    .Where(_ => _.AvatarItemId == text.AvatarItemId
-                        && _.LanguageId == text.LanguageId)
-                    .SingleOrDefault();
+                    .SingleOrDefault(_ => _.AvatarItemId == text.AvatarItemId
+                        && _.LanguageId == text.LanguageId);
 
                 if (!string.IsNullOrWhiteSpace(text.AltText))
                 {

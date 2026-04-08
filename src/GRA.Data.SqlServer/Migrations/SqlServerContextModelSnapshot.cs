@@ -17,7 +17,7 @@ namespace GRA.Data.SqlServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.22")
+                .HasAnnotation("ProductVersion", "8.0.25")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -444,6 +444,38 @@ namespace GRA.Data.SqlServer.Migrations
                     b.HasIndex("LanguageId");
 
                     b.ToTable("AvatarLayerTexts");
+                });
+
+            modelBuilder.Entity("GRA.Data.Model.AvatarTransfer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Filename")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("JobId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SiteId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransferType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AvatarTransfers");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.Badge", b =>
@@ -4748,7 +4780,7 @@ namespace GRA.Data.SqlServer.Migrations
             modelBuilder.Entity("GRA.Data.Model.AvatarLayerText", b =>
                 {
                     b.HasOne("GRA.Data.Model.AvatarLayer", "AvatarLayer")
-                        .WithMany()
+                        .WithMany("Texts")
                         .HasForeignKey("AvatarLayerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -5809,6 +5841,8 @@ namespace GRA.Data.SqlServer.Migrations
                     b.Navigation("AvatarColors");
 
                     b.Navigation("AvatarItems");
+
+                    b.Navigation("Texts");
                 });
 
             modelBuilder.Entity("GRA.Data.Model.Branch", b =>
