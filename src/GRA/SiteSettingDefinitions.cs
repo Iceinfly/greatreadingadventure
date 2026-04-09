@@ -157,6 +157,14 @@ namespace GRA
                     Category = typeof(SiteSettingKey.Points).Name,
                     Format = SiteSettingFormat.Integer
                 },
+                [SiteSettingKey.Prizes.ShowOnlyAt] = new SiteSettingDefinition
+                {
+                    Name = "Show 'only at' for limited prizes",
+                    Info = "Show 'only at' near prizes in the participant's profile if they were limited by system or branch",
+                    Category = typeof(SiteSettingKey.Prizes).Name,
+                    Format = SiteSettingFormat.Boolean,
+                    DefaultValue = SiteSettingTrueValue
+                },
                 [SiteSettingKey.SecretCode.Disable] = new SiteSettingDefinition
                 {
                     Name = "Disable",
@@ -297,6 +305,13 @@ namespace GRA
                     Info = "The number of users to prune in one block, pruning occurs every time the job runner executes - defaults to 20",
                     Category = typeof(SiteSettingKey.Users).Name,
                     Format = SiteSettingFormat.Integer
+                },
+                [SiteSettingKey.Users.RequireEmailAddress] = new SiteSettingDefinition
+                {
+                    Name = "Require email address",
+                    Info = "Require an email address for a user to sign up",
+                    Category = typeof(SiteSettingKey.Users).Name,
+                    Format = SiteSettingFormat.Boolean,
                 },
                 [SiteSettingKey.Users.RestrictChangingProgram] = new SiteSettingDefinition
                 {

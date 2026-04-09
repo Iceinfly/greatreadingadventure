@@ -68,6 +68,11 @@
         public static readonly string MaximumPermitted = "Points.MaximumPermitted";
     }
 
+    public static class Prizes
+    {
+        public static readonly string ShowOnlyAt = "Prizes.ShowOnlyAt";
+    }
+
     public static class SecretCode
     {
         // TODO make this truly disable secret codes for the site
@@ -118,6 +123,7 @@
         public static readonly string PruneInactiveDays = "Users.PruneInactiveDays";
 
         public static readonly string PruneUsersMaximumBlock = "Users.PruneUsersMaximumBlock";
+        public static readonly string RequireEmailAddress = "Users.RequireEmailAddress";
 
         public static readonly string RestrictChangingProgram
             = "Users.RestrictChangingProgram";

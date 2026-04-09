@@ -140,11 +140,13 @@ namespace GRA.Controllers.MissionControl
 
             var viewModel = new ParticipantsAddViewModel
             {
-                RequirePostalCode = site.RequirePostalCode,
                 ProgramJson = JsonConvert.SerializeObject(programViewObject),
-                SystemList = new SelectList(systemList.ToList(), "Id", "Name"),
                 ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
-                SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name")
+                IsEmailRequired
+                    = await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress),
+                RequirePostalCode = site.RequirePostalCode,
+                SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name"),
+                SystemList = new SelectList(systemList.ToList(), "Id", "Name")
             };
 
             var askIfFirstTime = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskIfFirstTime);
@@ -231,6 +233,14 @@ namespace GRA.Controllers.MissionControl
                     string.Format(CultureInfo.InvariantCulture,
                         Annotations.Validate.Email,
                         DisplayNames.EmailAddress));
+            }
+
+            if (await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress)
+                && string.IsNullOrEmpty(model.Email))
+            {
+                ModelState.AddModelError(nameof(model.Email),
+                    _sharedLocalizer[ErrorMessages.Field,
+                    _sharedLocalizer[DisplayNames.EmailAddress]]);
             }
 
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.PostalCode))
@@ -389,13 +399,15 @@ namespace GRA.Controllers.MissionControl
             var systemList = await _siteService.GetSystemList();
             var programList = await _siteService.GetProgramList();
             var programViewObject = _mapper.Map<List<ProgramSettingsViewModel>>(programList);
-            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
-            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
-            model.SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name");
             model.ProgramJson = JsonConvert.SerializeObject(programViewObject);
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+            model.IsEmailRequired
+                = await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress);
             model.RequirePostalCode = site.RequirePostalCode;
+            model.SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name");
             model.ShowAge = askAge;
             model.ShowSchool = askSchool;
+            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
 
             if (askIfFirstTime)
             {
@@ -469,7 +481,7 @@ namespace GRA.Controllers.MissionControl
         {
             page = page == 0 ? 1 : page;
 
-            var filter = new UserFilter(page) 
+            var filter = new UserFilter(page)
             {
                 CannotBeEmailed = cannotBeEmailed,
                 HasMultiplePrimaryVendorCodes = hasMultiplePrimaryVendorCodes
@@ -622,6 +634,8 @@ namespace GRA.Controllers.MissionControl
                     IsHomeschooled = user.IsHomeschooled,
                     ProgramJson = JsonConvert.SerializeObject(programViewObject),
                     ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
+                    IsEmailRequired
+                        = await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress),
                     RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
                     SchoolId = user.SchoolId,
                     SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(),
@@ -646,8 +660,8 @@ namespace GRA.Controllers.MissionControl
                     viewModel.CanEditUsername = true;
                 }
 
-                var (askEmailSubscription, askEmailSubscriptionText) = await GetSiteSettingStringAsync(
-                SiteSettingKey.Users.AskEmailSubPermission);
+                var (askEmailSubscription, askEmailSubscriptionText)
+                    = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
                 if (askEmailSubscription)
                 {
                     viewModel.AskEmailSubscription = true;
@@ -664,7 +678,8 @@ namespace GRA.Controllers.MissionControl
                         pointTranslation
                             .TranslationDescriptionPastTense
                             .Replace("{0}", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    viewModel.ActivityDescriptionPlural = pointTranslation.ActivityDescriptionPlural;
+                    viewModel.ActivityDescriptionPlural
+                        = pointTranslation.ActivityDescriptionPlural;
                 }
 
                 var askPersonalPointGoal = await GetSiteSettingBoolAsync(
@@ -713,6 +728,15 @@ namespace GRA.Controllers.MissionControl
                         Annotations.Validate.Email,
                         DisplayNames.EmailAddress));
             }
+
+            if (await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress)
+                && string.IsNullOrEmpty(model.User.Email))
+            {
+                ModelState.AddModelError("User.Email",
+                    _sharedLocalizer[ErrorMessages.Field,
+                    _sharedLocalizer[DisplayNames.EmailAddress]]);
+            }
+
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))
             {
                 ModelState.AddModelError("User.PostalCode", "The ZIP Code field is required.");
@@ -730,8 +754,8 @@ namespace GRA.Controllers.MissionControl
             {
                 ModelState.AddModelError("User.Username", "The Username field is required.");
             }
-            var (askEmailSubscription, askEmailSubscriptionText) = await GetSiteSettingStringAsync(
-                SiteSettingKey.Users.AskEmailSubPermission);
+            var (askEmailSubscription, askEmailSubscriptionText)
+                = await GetSiteSettingStringAsync(SiteSettingKey.Users.AskEmailSubPermission);
             if (askEmailSubscription && model.User.IsEmailSubscribed
                 && string.IsNullOrWhiteSpace(model.User.Email))
             {
@@ -740,11 +764,11 @@ namespace GRA.Controllers.MissionControl
                 "To receive email updates please supply an email address to send them to.");
             }
 
-            var (askActivityGoal, _) = await GetSiteSettingIntAsync(
-                SiteSettingKey.Users.DefaultDailyPersonalGoal);
+            var (askActivityGoal, _)
+                = await GetSiteSettingIntAsync(SiteSettingKey.Users.DefaultDailyPersonalGoal);
 
-            var askPersonalPointGoal = await GetSiteSettingBoolAsync(
-                SiteSettingKey.Users.AskPersonalPointGoal);
+            var askPersonalPointGoal
+                = await GetSiteSettingBoolAsync(SiteSettingKey.Users.AskPersonalPointGoal);
 
             if (ModelState.IsValid)
             {
@@ -832,6 +856,8 @@ namespace GRA.Controllers.MissionControl
             model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
             model.SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name");
             model.ProgramJson = JsonConvert.SerializeObject(programViewObject);
+            model.IsEmailRequired
+                = await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress);
             model.RequirePostalCode = site.RequirePostalCode;
             model.ShowAge = program.AskAge;
             model.ShowSchool = program.AskSchool;
@@ -914,7 +940,8 @@ namespace GRA.Controllers.MissionControl
             {
                 try
                 {
-                    await _activityService.MCAwardVendorCodeAsync(model.Id, model.VendorCodeTypeId.Value);
+                    await _activityService.MCAwardVendorCodeAsync(model.Id,
+                        model.VendorCodeTypeId.Value);
                     ShowAlertSuccess("Vendor Code awarded!");
                 }
                 catch (GraException gex)
@@ -934,7 +961,8 @@ namespace GRA.Controllers.MissionControl
 
             var viewModel = new LogActivityViewModel(await GetPopulatedBaseViewModel(user))
             {
-                DisableSecretCode = await GetSiteSettingBoolAsync(SiteSettingKey.SecretCode.Disable),
+                DisableSecretCode
+                    = await GetSiteSettingBoolAsync(SiteSettingKey.SecretCode.Disable),
                 HasPendingQuestionnaire = (await _questionnaireService
                     .GetRequiredQuestionnaire(user.Id, user.Age)).HasValue,
                 OpenToLog = _activityService.IsOpenToLog(),
@@ -1051,17 +1079,23 @@ namespace GRA.Controllers.MissionControl
                 var programList = await _siteService.GetProgramList();
                 var programViewObject = _mapper.Map<List<ProgramSettingsViewModel>>(programList);
 
+                var emailRequired
+                    = await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress);
+
                 var viewModel = new HouseholdAddViewModel
                 {
-                    User = userBase,
-                    Id = id,
-                    RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
-                    ProgramJson = JsonConvert.SerializeObject(programViewObject),
                     BranchList = new SelectList(branchList.ToList(), "Id", "Name"),
+                    EmailDataValRequired = emailRequired
+                        ? _sharedLocalizer[ErrorMessages.Field, DisplayNames.EmailAddress]
+                        : null,
+                    Id = id,
+                    ProgramJson = JsonConvert.SerializeObject(programViewObject),
                     ProgramList = new SelectList(programList.ToList(), "Id", "Name"),
-                    SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(),
-                        "Id", "Name"),
-                    SystemList = new SelectList(systemList.ToList(), "Id", "Name")
+                    RequirePostalCode = (await GetCurrentSiteAsync()).RequirePostalCode,
+                    SchoolList = new SelectList(await _schoolService
+                        .GetSchoolsAsync(), "Id", "Name"),
+                    SystemList = new SelectList(systemList.ToList(), "Id", "Name"),
+                    User = userBase,
                 };
 
                 if (programList.Count() == 1)
@@ -1098,7 +1132,8 @@ namespace GRA.Controllers.MissionControl
                         pointTranslation
                             .TranslationDescriptionPastTense
                             .Replace("{0}", "", StringComparison.OrdinalIgnoreCase).Trim();
-                    viewModel.ActivityDescriptionPlural = pointTranslation.ActivityDescriptionPlural;
+                    viewModel.ActivityDescriptionPlural
+                        = pointTranslation.ActivityDescriptionPlural;
                 }
 
                 var askPersonalPointGoal = await GetSiteSettingBoolAsync(
@@ -1146,6 +1181,14 @@ namespace GRA.Controllers.MissionControl
                     string.Format(CultureInfo.InvariantCulture,
                         Annotations.Validate.Email,
                         DisplayNames.EmailAddress));
+            }
+
+            if (await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress)
+                && string.IsNullOrEmpty(model.User.Email))
+            {
+                ModelState.AddModelError("User.Email",
+                    _sharedLocalizer[ErrorMessages.Field,
+                    _sharedLocalizer[DisplayNames.EmailAddress]]);
             }
 
             if (site.RequirePostalCode && string.IsNullOrWhiteSpace(model.User.PostalCode))
@@ -1297,17 +1340,25 @@ namespace GRA.Controllers.MissionControl
             {
                 branchList = branchList.Prepend(new Branch() { Id = -1 });
             }
+
             var systemList = await _siteService.GetSystemList();
             var programList = await _siteService.GetProgramList();
             var programViewObject = _mapper.Map<List<ProgramSettingsViewModel>>(programList);
             model.BranchList = new SelectList(branchList.ToList(), "Id", "Name");
-            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
-            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
-            model.SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name");
             model.ProgramJson = JsonConvert.SerializeObject(programViewObject);
+            model.ProgramList = new SelectList(programList.ToList(), "Id", "Name");
+
+            if (await GetSiteSettingBoolAsync(SiteSettingKey.Users.RequireEmailAddress))
+            {
+                model.EmailDataValRequired
+                    = _sharedLocalizer[ErrorMessages.Field, DisplayNames.EmailAddress];
+            }
+
             model.RequirePostalCode = site.RequirePostalCode;
+            model.SchoolList = new SelectList(await _schoolService.GetSchoolsAsync(), "Id", "Name");
             model.ShowAge = askAge;
             model.ShowSchool = askSchool;
+            model.SystemList = new SelectList(systemList.ToList(), "Id", "Name");
 
             if (askIfFirstTime)
             {
@@ -2475,13 +2526,17 @@ namespace GRA.Controllers.MissionControl
 
                 await _vendorCodeService.PopulateVendorCodeStatusAsync(user);
 
+                var showOnlyAt = await _siteLookupService
+                    .GetSiteSettingBoolAsync(GetCurrentSiteId(), SiteSettingKey.Prizes.ShowOnlyAt);
+
                 var viewModel = new PrizeListViewModel(await GetPopulatedBaseViewModel(user))
                 {
-                    PrizeWinners = prizeList.Data,
-                    PaginateModel = paginateModel,
+                    CanEditDetails = UserHasPermission(Permission.EditParticipants),
                     HeadOfHouseholdId = user.HouseholdHeadUserId,
-                    User = user,
-                    CanEditDetails = UserHasPermission(Permission.EditParticipants)
+                    ShowOnlyAt = showOnlyAt,
+                    PaginateModel = paginateModel,
+                    PrizeWinners = prizeList.Data,
+                    User = user
                 };
 
                 return View(viewModel);
@@ -2495,7 +2550,10 @@ namespace GRA.Controllers.MissionControl
 
         [HttpPost]
         [Authorize(Policy = Policy.ViewUserPrizes)]
-        public async Task<IActionResult> RedeemWinner(int prizeWinnerId, int userId, string staffNotes, int page = 1)
+        public async Task<IActionResult> RedeemWinner(int prizeWinnerId,
+            int userId,
+            string staffNotes,
+            int page = 1)
         {
             try
             {
