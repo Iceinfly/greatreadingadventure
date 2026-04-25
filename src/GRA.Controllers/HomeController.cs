@@ -335,13 +335,12 @@ namespace GRA.Controllers
                 var userAvatar = await _avatarService.GetUserAvatarAsync();
                 if (userAvatar?.Count > 0)
                 {
-                    var avatarElements = userAvatar;
-                    foreach (var element in avatarElements)
+                    foreach (var element in userAvatar)
                     {
                         var path = await _avatarService.GetElementPathAsync(element);
                         element.Filename = _pathResolver.ResolvePrivatePath(path);
                     }
-                    viewModel.AvatarElements = avatarElements;
+                    viewModel.AvatarElements = userAvatar;
                 }
 
                 var dashboardPage = await _dashboardContentService.GetCurrentContentAsync();

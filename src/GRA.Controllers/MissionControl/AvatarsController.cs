@@ -426,6 +426,7 @@ namespace GRA.Controllers.MissionControl
                 ItemsPerPage = filter.Take.Value
             };
 
+            var siteId = GetCurrentSiteId();
             foreach (var item in items.Data)
             {
                 if (!string.IsNullOrWhiteSpace(item.Thumbnail))
@@ -468,7 +469,7 @@ namespace GRA.Controllers.MissionControl
             {
                 foreach (var layer in layers)
                 {
-                    layer.Icon = _pathResolver.ResolveContentPath(layer.Icon);
+                    layer.IconLink = _pathResolver.ResolveContentPath(layer.GetIconLink());
 
                     layer.AvailableItems = await _avatarService
                         .GetLayerAvailableItemCountAsync(layer.Id);
@@ -525,11 +526,13 @@ namespace GRA.Controllers.MissionControl
                     });
             }
 
+            var siteId = GetCurrentSiteId();
             foreach (var item in viewModel.Items)
             {
                 item.AvatarLayerName = await _avatarService
                     .GetDefaultLayerNameByIdAsync(item.AvatarLayerId);
-                item.Thumbnail = _pathResolver.ResolveContentPath(item.Thumbnail);
+                item.ThumbnailLink = _pathResolver
+                    .ResolveContentPath(item.GetThumbnailLink(siteId));
             }
 
             viewModel.Languages = await _languageService.GetActiveAsync();
@@ -648,6 +651,7 @@ namespace GRA.Controllers.MissionControl
                     });
             }
 
+            int siteId = GetCurrentSiteId();
             foreach (var item in itemList.Data)
             {
                 var thumbnailPath = _avatarService.GetItemThumbnailPath(item);

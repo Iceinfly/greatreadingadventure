@@ -1598,8 +1598,9 @@ namespace GRA.Domain.Service
 
                 var notification = new Notification
                 {
+                    AvatarBundleId = bundleId,
+                    BadgeFilename = bundle.AvatarItems.FirstOrDefault()?.GetThumbnailLink(bundle.SiteId),
                     PointsEarned = 0,
-
                     Text = $"<span class=\"fas fa-shopping-bag\"></span> You've unlocked the <strong>{bundle.Name}</strong> avatar bundle!",
                     UserId = userId,
                     BadgeFilename = badgeThumbnailPath,

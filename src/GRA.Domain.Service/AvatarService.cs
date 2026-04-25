@@ -388,8 +388,8 @@ namespace GRA.Domain.Service
                     layer.Name = layerText["Name"];
                     layer.RemoveLabel = layerText["RemoveLabel"];
                     layer.AvatarItems = await _avatarItemRepository
-                               .GetUserItemsByLayerAsync(activeUserId, layer.Id, currentLanguageId);
-                    layer.Icon = _pathResolver.ResolveContentPath(layer.Icon);
+                        .GetUserItemsByLayerAsync(activeUserId, layer.Id, currentLanguageId);
+                    layer.IconLink = _pathResolver.ResolveContentPath(layer.GetIconLink());
 
                     if (userAvatar.Count > 0)
                     {
