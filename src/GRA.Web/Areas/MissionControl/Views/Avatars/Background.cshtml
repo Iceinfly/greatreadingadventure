@@ -1,0 +1,127 @@
+@model GRA.Controllers.ViewModel.MissionControl.Avatar.BackgroundViewModel
+
+@section inHeading {
+    <div class="ms-auto">
+        <button type="button"
+                class="btn btn-outline-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#uploadModal">
+            Upload avatar background
+        </button>
+        <a asp-action="@nameof(AvatarsController.Index)"
+           class="btn btn-outline-secondary ms-2">Back</a>
+    </div>
+}
+
+<div class="row my-4">
+    <div class="col-12 col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">Current stage background</div>
+            <div class="card-body">
+                @if (Model.BackgroundExists)
+                {
+                    <img src="~/@Model.BackgroundImageUrl"
+                         class="img-fluid border rounded"
+                         alt="Current avatar background" />
+                }
+                else
+                {
+                    <div class="alert alert-warning mb-0">
+                        No avatar background image has been uploaded.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="@nameof(AvatarsController.Background)"
+      id="uploadBackgroundForm"
+      method="post"
+      enctype="multipart/form-data">
+    <div class="modal"
+         id="uploadModal"
+         tabindex="-1"
+         data-bs-backdrop="static"
+         data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Avatar Background</h5>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Upload a new <code>.png</code> image to use as the background for avatars.
+                    </p>
+                    <div class="row row-spacing">
+                        <div class="col-12">
+                            <div class="input-group mb-3">
+                                <input type="file"
+                                       class="form-control"
+                                       asp-for="UploadedFile"
+                                       accept=".png" />
+                                <button class="btn btn-outline-secondary"
+                                        type="button"
+                                        id="clearSelectionButton"
+                                        onclick="$('#UploadedFile').val('')">
+                                    Clear selection
+                                </button>
+                            </div>
+                            <span asp-validation-for="UploadedFile" class="text-danger"></span>
+                        </div>
+                        <div class="col-12" style="height: 2rem;">
+                            <div class="progress h-100"
+                                 role="progressbar"
+                                 aria-label="Upload indicator"
+                                 aria-valuenow="0"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                <div class="progress-bar progress-bar-striped"
+                                     id="uploadProgressBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            id="cancelUploadButton"
+                            class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button class="btn btn-outline-primary"
+                            type="submit"
+                            button-spinner>
+                        <span class="fas fa-file-upload"></span>
+                        Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section scripts {
+    <script type="text/javascript">
+        const avatarBackgroundForm = document.getElementById("uploadBackgroundForm");
+        const uploadModal = document.getElementById("uploadModal");
+
+        if(uploadModal) {
+            uploadModal.addEventListener('show.bs.modal', _ => {
+                document.getElementById("cancelUploadButton").removeAttribute("disabled");
+                document.getElementById("clearSelectionButton").removeAttribute("disabled");
+                document.getElementById("uploadProgressBar").classList.remove("progress-bar-animated", "progress-bar-striped", "w-100");
+                document.getElementById("uploadProgressBar").setAttribute("aria-valuenow", "0");
+            });
+        }
+
+        if(avatarBackgroundForm) {
+            avatarBackgroundForm.addEventListener("submit", _ => {
+                document.getElementById("cancelUploadButton").setAttribute("disabled", "disabled");
+                document.getElementById("clearSelectionButton").setAttribute("disabled", "disabled");
+                document.getElementById("uploadProgressBar").classList.add("progress-bar-animated", "progress-bar-striped", "w-100");
+                document.getElementById("uploadProgressBar").setAttribute("aria-valuenow", "100");
+            });
+        }
+    </script>
+}
