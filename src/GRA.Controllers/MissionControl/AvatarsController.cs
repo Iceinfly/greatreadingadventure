@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using SixLabors.ImageSharp;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -75,6 +76,79 @@ namespace GRA.Controllers.MissionControl
 
         public static string Name
         { get { return "Avatars"; } }
+
+        public IActionResult Background()
+        {
+            var model = new BackgroundViewModel();
+            SetBackgroundViewModel(model);
+            return View(model);
+        }
+
+        [HttpPost]
+        [RequestSizeLimit(MaxFileSize)]
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxFileSize)]
+        public async Task<IActionResult> Background(BackgroundViewModel model)
+        {
+            ArgumentNullException.ThrowIfNull(model);
+
+            if (model.UploadedFile == null || model.UploadedFile.Length == 0)
+            {
+                ModelState.AddModelError(nameof(model.UploadedFile),
+                    "A background .png file is required.");
+            }
+            else if (!string.Equals(Path.GetExtension(model.UploadedFile.FileName),
+                ".png",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(nameof(model.UploadedFile),
+                    "You must select a .png file.");
+            }
+            else
+            {
+                try
+                {
+                    await using var uploadStream = model.UploadedFile.OpenReadStream();
+                    using var uploadedImage = await Image.LoadAsync(uploadStream);
+
+                    var backgroundDirectory = GetBackgroundDirectory();
+                    if (!Directory.Exists(backgroundDirectory))
+                    {
+                        Directory.CreateDirectory(backgroundDirectory);
+                    }
+
+                    uploadStream.Seek(0, SeekOrigin.Begin);
+                    await using var fileStream = new FileStream(GetBackgroundPath(), FileMode.Create);
+                    await uploadStream.CopyToAsync(fileStream);
+
+                    ClearGeneratedAvatarShareImages();
+                    _logger.LogInformation(
+                        "Uploaded avatar background file: {Filename} of size {Filesize}",
+                        model.UploadedFile.FileName,
+                        model.UploadedFile.Length);
+                    ShowAlertSuccess("Avatar background updated.");
+                    return RedirectToAction(nameof(Background));
+                }
+                catch (UnknownImageFormatException)
+                {
+                    ModelState.AddModelError(nameof(model.UploadedFile),
+                        "The selected file is not a supported image.");
+                }
+                catch (InvalidImageContentException)
+                {
+                    ModelState.AddModelError(nameof(model.UploadedFile),
+                        "The selected file could not be read as an image.");
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogError(ex, "Unable to save avatar background");
+                    ModelState.AddModelError(nameof(model.UploadedFile),
+                        "Unable to save the avatar background.");
+                }
+            }
+
+            SetBackgroundViewModel(model);
+            return View(model);
+        }
 
         public async Task<IActionResult> BundleCreate()
         {
@@ -917,6 +991,41 @@ namespace GRA.Controllers.MissionControl
 
             PageTitle = "Avatar Transfers";
             return View(viewModel);
+        }
+
+        private void SetBackgroundViewModel(BackgroundViewModel model)
+        {
+            model.BackgroundExists = System.IO.File.Exists(GetBackgroundPath());
+            model.BackgroundImageUrl = model.BackgroundExists
+                ? _pathResolver.ResolveContentPath(Path.Combine($"site{GetCurrentSiteId()}",
+                    AvatarSharing.BackgroundDirectory,
+                    AvatarSharing.BackgroundFileName))
+                : null;
+            PageTitle = "Avatar Background";
+        }
+
+        private void ClearGeneratedAvatarShareImages()
+        {
+            var avatarShareDirectory = _pathResolver.ResolveContentFilePath(
+                Path.Combine($"site{GetCurrentSiteId()}", GRA.Controllers.AvatarController.PathUserAvatars));
+            if (Directory.Exists(avatarShareDirectory))
+            {
+                foreach (var file in Directory.GetFiles(avatarShareDirectory, "*.png"))
+                {
+                    System.IO.File.Delete(file);
+                }
+            }
+        }
+
+        private string GetBackgroundDirectory()
+        {
+            return _pathResolver.ResolveContentFilePath(Path.Combine($"site{GetCurrentSiteId()}",
+                AvatarSharing.BackgroundDirectory));
+        }
+
+        private string GetBackgroundPath()
+        {
+            return Path.Combine(GetBackgroundDirectory(), AvatarSharing.BackgroundFileName);
         }
 
         private static AvatarIndex FindAvatarIndex(string path)

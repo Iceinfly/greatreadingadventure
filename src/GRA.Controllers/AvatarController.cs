@@ -257,7 +257,9 @@ namespace GRA.Controllers
                     var timer = Stopwatch.StartNew();
                     using var image = new Image<Rgba32>(1200, 630);
                     var background = _pathResolver.ResolveContentFilePath(
-                        Path.Combine($"site{site.Id}", "avatarbackgrounds", "background.png"));
+                        Path.Combine($"site{site.Id}",
+                            AvatarSharing.BackgroundDirectory,
+                            AvatarSharing.BackgroundFileName));
                     var backgroundImage = await Image.LoadAsync(background);
                     image.Mutate(_ => _.DrawImage(backgroundImage, 1));
 

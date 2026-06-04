@@ -256,9 +256,9 @@ namespace GRA.Domain.Service
 
             // copy background image
             File.Copy(_pathResolver.ResolveContentFilePath(Path.Join(siteBasePath,
-                    "avatarbackgrounds",
-                    "background.png")),
-                Path.Join(zipPath, "background.png"));
+                    AvatarSharing.BackgroundDirectory,
+                    AvatarSharing.BackgroundFileName)),
+                Path.Join(zipPath, AvatarSharing.BackgroundFileName));
 
             // copy bundle icons
             File.Copy(_pathResolver.ResolveContentFilePath(Path.Join(siteBasePath,
@@ -753,15 +753,15 @@ namespace GRA.Domain.Service
                 Error = false
             });
 
-            var backgroundRoot = Path.Combine($"site{siteId}", "avatarbackgrounds");
+            var backgroundRoot = Path.Combine($"site{siteId}", AvatarSharing.BackgroundDirectory);
             var backgroundPath = _pathResolver.ResolveContentFilePath(backgroundRoot);
             if (Directory.Exists(backgroundPath))
             {
                 Directory.Delete(backgroundPath, true);
             }
             Directory.CreateDirectory(backgroundPath);
-            File.Copy(Path.Combine(assetPath, "background.png"),
-                Path.Combine(backgroundPath, "background.png"));
+            File.Copy(Path.Combine(assetPath, AvatarSharing.BackgroundFileName),
+                Path.Combine(backgroundPath, AvatarSharing.BackgroundFileName));
             totalFilesCopied++;
 
             var bundleRoot = Path.Combine($"site{siteId}", "avatarbundles");
