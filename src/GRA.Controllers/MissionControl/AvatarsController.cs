@@ -995,11 +995,16 @@ namespace GRA.Controllers.MissionControl
 
         private void SetBackgroundViewModel(BackgroundViewModel model)
         {
-            model.BackgroundExists = System.IO.File.Exists(GetBackgroundPath());
+            var backgroundPath = GetBackgroundPath();
+            model.BackgroundExists = System.IO.File.Exists(backgroundPath);
             model.BackgroundImageUrl = model.BackgroundExists
-                ? _pathResolver.ResolveContentPath(Path.Combine($"site{GetCurrentSiteId()}",
+                ? _pathResolver.ResolveContentPath(string.Join('/',
+                    $"site{GetCurrentSiteId()}",
                     AvatarSharing.BackgroundDirectory,
                     AvatarSharing.BackgroundFileName))
+                : null;
+            model.BackgroundImageVersion = model.BackgroundExists
+                ? System.IO.File.GetLastWriteTimeUtc(backgroundPath).Ticks.ToString()
                 : null;
             PageTitle = "Avatar Background";
         }

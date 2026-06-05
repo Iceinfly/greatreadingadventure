@@ -6,6 +6,7 @@ namespace GRA.Controllers.ViewModel.MissionControl.Avatar
     {
         public bool BackgroundExists { get; set; }
         public string BackgroundImageUrl { get; set; }
+        public string BackgroundImageVersion { get; set; }
         public IFormFile UploadedFile { get; set; }
     }
 }

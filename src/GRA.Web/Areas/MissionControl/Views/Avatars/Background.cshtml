@@ -1,4 +1,4 @@
-@model GRA.Controllers.ViewModel.MissionControl.Avatar.BackgroundViewModel
+﻿@model GRA.Controllers.ViewModel.MissionControl.Avatar.BackgroundViewModel
 
 @section inHeading {
     <div class="ms-auto">
@@ -20,7 +20,7 @@
             <div class="card-body">
                 @if (Model.BackgroundExists)
                 {
-                    <img src="~/@Model.BackgroundImageUrl"
+                    <img src="~/@Model.BackgroundImageUrl?@Model.BackgroundImageVersion"
                          class="img-fluid border rounded"
                          alt="Current avatar background" />
                 }
